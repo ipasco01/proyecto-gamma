@@ -3,6 +3,7 @@
  */
 
 package edu.gamma.proyecto.gamma;
+import proyectogamma.views.LoginView;
 
 /**
  *
@@ -11,6 +12,7 @@ package edu.gamma.proyecto.gamma;
 public class ProyectoGamma {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        LoginView loginView = new LoginView();
+        loginView.setVisible(true); // Mostrar la ventana de login
     }
 }

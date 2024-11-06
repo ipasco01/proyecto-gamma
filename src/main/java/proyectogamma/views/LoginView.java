@@ -3,7 +3,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package proyectogamma.views;
-
+import proyectogamma.model.Usuario;
+import proyectogamma.controller.UsuarioController;
 /**
  *
  * @author Asus
@@ -28,6 +29,13 @@ public class LoginView extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        txtNombreUsuario = new javax.swing.JTextField();
+        txtContrasena = new javax.swing.JPasswordField();
+        jLabel4 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+        lblMensaje = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Login");
@@ -39,7 +47,7 @@ public class LoginView extends javax.swing.JFrame {
         setResizable(false);
         setSize(new java.awt.Dimension(800, 500));
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/Logo Gamma.png"))); // NOI18N
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/LogoGamma.png"))); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -52,21 +60,98 @@ public class LoginView extends javax.swing.JFrame {
             .addComponent(jLabel1)
         );
 
+        jLabel2.setFont(new java.awt.Font("Trebuchet MS", 1, 14)); // NOI18N
+        jLabel2.setText("Contraseña");
+
+        jLabel3.setFont(new java.awt.Font("Trebuchet MS", 1, 18)); // NOI18N
+        jLabel3.setText("Inicio de Sesión");
+
+        txtNombreUsuario.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtNombreUsuarioActionPerformed(evt);
+            }
+        });
+
+        txtContrasena.setText("jPasswordField1");
+
+        jLabel4.setFont(new java.awt.Font("Trebuchet MS", 1, 14)); // NOI18N
+        jLabel4.setText("Usuario");
+
+        jButton1.setText("Ingresar");
+        jButton1.setActionCommand("login");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                login(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 400, Short.MAX_VALUE))
+                .addGap(103, 103, 103)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jButton1)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblMensaje)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(jLabel2)
+                                .addComponent(txtNombreUsuario)
+                                .addComponent(txtContrasena, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addGap(0, 102, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(152, 152, 152)
+                .addComponent(jLabel3)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtNombreUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel2)
+                .addGap(26, 26, 26)
+                .addComponent(txtContrasena, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lblMensaje)
+                .addGap(4, 4, 4)
+                .addComponent(jButton1))
         );
 
+        txtNombreUsuario.getAccessibleContext().setAccessibleName("txtNombreUsuario");
+        jButton1.getAccessibleContext().setAccessibleName("Login");
+
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void login(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_login
+        String nombreUsuario = txtNombreUsuario.getText();
+        String contrasena = new String(txtContrasena.getPassword());
+
+        //UsuarioController usuarioController = new UsuarioController();
+       // Usuario usuario = usuarioController.login(nombreUsuario, contrasena);
+
+        //if (usuario != null) {
+          //  lblMensaje.setText("¡Bienvenido, " + usuario.getNombreUsuario() + "!");
+
+         //   this.dispose(); // Cierra el login
+         //   JOptionPane.showMessageDialog(this, "Inicio de sesión exitoso como " + usuario.getRol());
+        //} else {
+         //   lblMensaje.setText("Credenciales incorrectas.");
+        //}
+    }//GEN-LAST:event_login
+
+    private void txtNombreUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreUsuarioActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtNombreUsuarioActionPerformed
 
     /**
      * @param args the command line arguments
@@ -104,7 +189,14 @@ public class LoginView extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lblMensaje;
+    private javax.swing.JPasswordField txtContrasena;
+    private javax.swing.JTextField txtNombreUsuario;
     // End of variables declaration//GEN-END:variables
 }
