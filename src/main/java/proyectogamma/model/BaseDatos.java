@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 /**
  *
- * @author Asus
+ * @author Isabel
  */
 public class BaseDatos {
   private static Connection connection = null;
