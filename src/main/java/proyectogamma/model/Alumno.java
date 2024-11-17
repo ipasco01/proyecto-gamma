@@ -4,6 +4,7 @@
  */
 package proyectogamma.model;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -16,13 +17,15 @@ public class Alumno {
     private String apellido;
     private String email;
     private Date fechaNacimiento;
+    private Date timestamp;
 
-    public Alumno(int id, String nombre, String apellido, String email, Date fechaNacimiento) {
+    public Alumno(int id, String nombre, String apellido, String email, Date fechaNacimiento, Timestamp timestamp) {
         this.id = id;
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
         this.fechaNacimiento = fechaNacimiento;
+        this.timestamp = timestamp;
     }
 
     // Getters y Setters

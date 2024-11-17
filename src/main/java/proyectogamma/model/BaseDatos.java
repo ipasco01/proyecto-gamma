@@ -19,24 +19,20 @@ public class BaseDatos {
     private static final String USER = "isa";
     private static final String PASSWORD = "7424@@";
 
-    // Método para obtener la conexión
+    // Método para obtener una nueva conexión
     public static Connection getConnection() {
-        
-        if (connection == null) {  // Si no existe una conexión activa, se crea una
-            try {
-                // Establecer la conexión a la base de datos
-                connection = DriverManager.getConnection(URL, USER, PASSWORD);
-                System.out.println("Conexión exitosa a la base de datos");
-
-            } catch (SQLException e) {
-                System.out.println("Error al conectar a la base de datos: " + e.getMessage());
-            }
+        try {
+            Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            System.out.println("Conexión exitosa a la base de datos");
+            return connection; // Devuelve una nueva conexión
+        } catch (SQLException e) {
+            System.out.println("Error al conectar a la base de datos: " + e.getMessage());
+            return null; // Devuelve null si no puede conectar
         }
-        return connection;
     }
 
-    // Método para cerrar la conexión
-    public static void closeConnection() {
+    // Método para cerrar una conexión específica
+    public static void closeConnection(Connection connection) {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();

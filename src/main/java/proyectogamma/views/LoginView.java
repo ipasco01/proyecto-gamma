@@ -34,7 +34,7 @@ public class LoginView extends javax.swing.JFrame {
         txtNombreUsuario = new javax.swing.JTextField();
         txtContrasena = new javax.swing.JPasswordField();
         jLabel4 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        btnLogin = new javax.swing.JButton();
         lblMensaje = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -71,14 +71,12 @@ public class LoginView extends javax.swing.JFrame {
             }
         });
 
-        txtContrasena.setText("jPasswordField1");
-
         jLabel4.setFont(new java.awt.Font("Trebuchet MS", 1, 14)); // NOI18N
         jLabel4.setText("Usuario");
 
-        jButton1.setText("Ingresar");
-        jButton1.setActionCommand("login");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnLogin.setText("Ingresar");
+        btnLogin.setActionCommand("login");
+        btnLogin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 login(evt);
             }
@@ -95,7 +93,7 @@ public class LoginView extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(jLabel4)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jButton1)
+                        .addComponent(btnLogin)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblMensaje)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -121,11 +119,11 @@ public class LoginView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lblMensaje)
                 .addGap(4, 4, 4)
-                .addComponent(jButton1))
+                .addComponent(btnLogin))
         );
 
         txtNombreUsuario.getAccessibleContext().setAccessibleName("txtNombreUsuario");
-        jButton1.getAccessibleContext().setAccessibleName("Login");
+        btnLogin.getAccessibleContext().setAccessibleName("Login");
 
         pack();
         setLocationRelativeTo(null);
@@ -135,17 +133,38 @@ public class LoginView extends javax.swing.JFrame {
         String nombreUsuario = txtNombreUsuario.getText();
         String contrasena = new String(txtContrasena.getPassword());
 
-        //UsuarioController usuarioController = new UsuarioController();
-       // Usuario usuario = usuarioController.login(nombreUsuario, contrasena);
-
-        //if (usuario != null) {
-          //  lblMensaje.setText("¡Bienvenido, " + usuario.getNombreUsuario() + "!");
-
-         //   this.dispose(); // Cierra el login
-         //   JOptionPane.showMessageDialog(this, "Inicio de sesión exitoso como " + usuario.getRol());
-        //} else {
-         //   lblMensaje.setText("Credenciales incorrectas.");
-        //}
+        UsuarioController usuarioController = new UsuarioController();
+        Usuario usuario = usuarioController.login(nombreUsuario, contrasena);
+        if (usuario != null) {
+            switch (usuario.getRol()) {
+                case "Alumno":
+                    new AlumnoView(usuario).setVisible(true);
+                    break;
+                case "Docente":
+                    //new DocenteView(usuario).setVisible(true);
+                    break;
+                case "Padre":
+                    //new PadreView(usuario).setVisible(true);
+                    break;
+                case "Admin":
+                    //new AdminView(usuario).setVisible(true);
+                    break;
+                default:
+                    lblMensaje.setText("Rol desconocido.");
+            }
+            this.dispose(); // Cierra la ventana de login
+        } else {
+            lblMensaje.setText( "Credenciales incorrectas.");
+        }
+        if (usuario != null) {
+          lblMensaje.setText("¡Bienvenido, " + usuario.getNombreUsuario() + "!");
+          
+         
+        
+        } else {
+           lblMensaje.setText("Credenciales incorrectas.");
+        }
+        
     }//GEN-LAST:event_login
 
     private void txtNombreUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreUsuarioActionPerformed
@@ -188,7 +207,7 @@ public class LoginView extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton btnLogin;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
