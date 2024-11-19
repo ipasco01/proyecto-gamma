@@ -4,10 +4,74 @@
  */
 package proyectogamma.model;
 
-/**
- *
- * @author Asus
- */
+import java.util.Date;
+
 public class Calificacion {
-    
+    private int id;
+    private int idAlumno;
+    private int idAsignatura;
+    private double nota;
+    private Date fecha;
+
+    // Constructor
+    public Calificacion(int id, int idAlumno, int idAsignatura, double nota, Date fecha) {
+        this.id = id;
+        this.idAlumno = idAlumno;
+        this.idAsignatura = idAsignatura;
+        this.nota = nota;
+        this.fecha = fecha;
+    }
+
+    // Getters y Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getIdAlumno() {
+        return idAlumno;
+    }
+
+    public void setIdAlumno(int idAlumno) {
+        this.idAlumno = idAlumno;
+    }
+
+    public int getIdAsignatura() {
+        return idAsignatura;
+    }
+
+    public void setIdAsignatura(int idAsignatura) {
+        this.idAsignatura = idAsignatura;
+    }
+
+    public double getNota() {
+        return nota;
+    }
+
+    public void setNota(double nota) {
+        this.nota = nota;
+    }
+
+    public Date getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(Date fecha) {
+        this.fecha = fecha;
+    }
+
+    // Método toString para imprimir los datos de Calificacion
+    @Override
+    public String toString() {
+        return "Calificacion{" +
+                "id=" + id +
+                ", idAlumno=" + idAlumno +
+                ", idAsignatura=" + idAsignatura +
+                ", nota=" + nota +
+                ", fecha=" + fecha +
+                '}';
+    }
 }
