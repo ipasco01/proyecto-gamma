@@ -28,6 +28,12 @@ public class AlumnoView extends javax.swing.JFrame {
         this.alumno = usuarioController.obtenerAlumnoPorUsuario(usuario);
     }
     initComponents();
+    try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+         
     jTabbedPane4.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());
     
     setLocationRelativeTo(null); // Centrar la ventana
@@ -63,7 +69,7 @@ public class AlumnoView extends javax.swing.JFrame {
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jScrollPane10 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        jTable1 = new javax.swing.JTable();
         jLabel11 = new javax.swing.JLabel();
         jScrollPane11 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
@@ -85,23 +91,26 @@ public class AlumnoView extends javax.swing.JFrame {
         setMaximumSize(new java.awt.Dimension(800, 600));
         setMinimumSize(new java.awt.Dimension(800, 600));
         setUndecorated(true);
-        setPreferredSize(new java.awt.Dimension(800, 600));
         setResizable(false);
         setSize(new java.awt.Dimension(800, 500));
 
         jPanel8.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel8.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 204)));
         jPanel8.setPreferredSize(new java.awt.Dimension(800, 500));
         jPanel8.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jPanel9.setBackground(new java.awt.Color(0, 0, 204));
+        jPanel9.setBackground(new java.awt.Color(255, 255, 255));
         jPanel9.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        lblBienvenida.setBackground(new java.awt.Color(255, 255, 255));
         lblBienvenida.setFont(new java.awt.Font("Poppins Medium", 3, 14)); // NOI18N
-        lblBienvenida.setForeground(new java.awt.Color(255, 255, 255));
+        lblBienvenida.setForeground(new java.awt.Color(0, 51, 204));
         lblBienvenida.setText("jLabel2");
         jPanel9.add(lblBienvenida, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 310, -1));
 
+        closeSession.setBackground(new java.awt.Color(0, 0, 204));
         closeSession.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        closeSession.setForeground(new java.awt.Color(255, 255, 255));
         closeSession.setText("Cerrar Sesión");
         closeSession.setBorder(null);
         closeSession.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -110,17 +119,17 @@ public class AlumnoView extends javax.swing.JFrame {
                 closeSessionActionPerformed(evt);
             }
         });
-        jPanel9.add(closeSession, new org.netbeans.lib.awtextra.AbsoluteConstraints(690, 7, 97, 28));
+        jPanel9.add(closeSession, new org.netbeans.lib.awtextra.AbsoluteConstraints(657, 0, 120, 30));
 
-        jPanel8.add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 800, 40));
+        jPanel8.add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 780, 30));
 
         mainPanel3.setBackground(new java.awt.Color(255, 255, 255));
         mainPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         mainPanel3.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         mainPanel3.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jTabbedPane4.setBackground(new java.awt.Color(0, 0, 204));
-        jTabbedPane4.setForeground(new java.awt.Color(255, 255, 255));
+        jTabbedPane4.setBackground(new java.awt.Color(255, 255, 255));
+        jTabbedPane4.setForeground(new java.awt.Color(0, 0, 153));
         jTabbedPane4.setToolTipText("");
         jTabbedPane4.setFocusable(false);
         jTabbedPane4.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
@@ -187,8 +196,8 @@ public class AlumnoView extends javax.swing.JFrame {
         jPanel6.setBackground(new java.awt.Color(255, 255, 255));
         jPanel6.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jComboBox1.setFont(new java.awt.Font("Trebuchet MS", 3, 14)); // NOI18N
-        jComboBox1.setForeground(java.awt.SystemColor.textHighlight);
+        jComboBox1.setFont(new java.awt.Font("Poppins", 3, 14)); // NOI18N
+        jComboBox1.setForeground(new java.awt.Color(0, 51, 153));
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         jComboBox1.setBorder(null);
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
@@ -200,37 +209,52 @@ public class AlumnoView extends javax.swing.JFrame {
 
         jPanel6.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 30, 255, 50));
 
-        jLabel9.setFont(new java.awt.Font("Trebuchet MS", 1, 18)); // NOI18N
+        jLabel9.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel9.setText("Notas");
         jPanel6.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(298, 6, -1, 20));
 
-        jLabel10.setFont(new java.awt.Font("Trebuchet MS", 1, 18)); // NOI18N
+        jLabel10.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel10.setText("Asignaturas");
         jPanel6.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 6, -1, 20));
 
-        jList1.setBorder(null);
-        jList1.setFont(new java.awt.Font("Trebuchet MS", 0, 12)); // NOI18N
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
+        jScrollPane10.setBorder(null);
+        jScrollPane10.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        jTable1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
         });
-        jList1.setSelectionBackground(new java.awt.Color(0, 0, 204));
-        jScrollPane10.setViewportView(jList1);
+        jScrollPane10.setViewportView(jTable1);
 
         jPanel6.add(jScrollPane10, new org.netbeans.lib.awtextra.AbsoluteConstraints(298, 30, 456, 454));
 
-        jLabel11.setFont(new java.awt.Font("Trebuchet MS", 1, 18)); // NOI18N
+        jLabel11.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel11.setText("Promedios");
-        jPanel6.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 177, -1, 20));
+        jPanel6.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 100, -1, 20));
 
         jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Trebuchet MS", 0, 12)); // NOI18N
+        jTextArea1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         jTextArea1.setRows(5);
         jScrollPane11.setViewportView(jTextArea1);
 
-        jPanel6.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 203, 255, 281));
-        jPanel6.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 98, 255, 73));
+        jPanel6.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 124, 255, 160));
+        jPanel6.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 98, 255, 20));
 
         jTabbedPane4.addTab("Ver Asignaturas", jPanel6);
 
@@ -264,13 +288,13 @@ public class AlumnoView extends javax.swing.JFrame {
         jPanel7.add(btnLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(580, 244, -1, -1));
 
         jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
-        jPanel7.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 30, 80, 70));
+        jPanel7.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 30, 80, 70));
 
         jTabbedPane4.addTab("Cambio de Contraseña", jPanel7);
 
-        mainPanel3.add(jTabbedPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 3, 800, 560));
+        mainPanel3.add(jTabbedPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 3, 780, 560));
 
-        jPanel8.add(mainPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 36, 800, 540));
+        jPanel8.add(mainPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 36, 780, 540));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -308,11 +332,6 @@ public class AlumnoView extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
-         try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
          
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -337,7 +356,6 @@ public class AlumnoView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
@@ -349,6 +367,7 @@ public class AlumnoView extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JTabbedPane jTabbedPane4;
+    private javax.swing.JTable jTable1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JLabel lblBienvenida;
     private javax.swing.JList<String> listaNotificaciones3;
