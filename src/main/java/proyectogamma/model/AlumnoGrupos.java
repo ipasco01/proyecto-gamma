@@ -4,9 +4,6 @@
  */
 package proyectogamma.model;
 
-import java.sql.Timestamp;
-import java.util.Date;
-
 public class AlumnoGrupos {
     private int id;
     private int idGrupo;

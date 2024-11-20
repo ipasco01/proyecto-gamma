@@ -6,11 +6,18 @@ package proyectogamma.views;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.ui.FlatComboBoxUI;
+import java.util.List;
+import javax.swing.DefaultListModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import proyectogamma.model.Usuario;
 import proyectogamma.model.Alumno;
 import proyectogamma.controller.UsuarioController;
+import proyectogamma.controller.NotificacionController;
+import proyectogamma.controller.AlumnoController;
+import proyectogamma.controller.DocenteController;
+import proyectogamma.model.Docente;
+import proyectogamma.model.Notificacion;
 /**
  *
  * @author Isabel
@@ -26,8 +33,11 @@ public class AlumnoView extends javax.swing.JFrame {
     if (usuario.getIdAlumno() != null) {
         UsuarioController usuarioController = new UsuarioController();
         this.alumno = usuarioController.obtenerAlumnoPorUsuario(usuario);
+        System.out.println("Alumno cargado: " + alumno);
     }
     initComponents();
+    cargarNotificacionesGrupales(); 
+    cargarNotificacionesPersonales(); 
     try {
             UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (UnsupportedLookAndFeelException e) {
@@ -35,17 +45,111 @@ public class AlumnoView extends javax.swing.JFrame {
         }
          
     jTabbedPane4.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());
-    
+    listaNotificacionesGrupales.addListSelectionListener(e -> {
+    if (!e.getValueIsAdjusting()) {
+        mostrarNotificacionSeleccionada(listaNotificacionesGrupales);
+    }
+});
+
+listaNotificacionesPersonal3.addListSelectionListener(e -> {
+    if (!e.getValueIsAdjusting()) {
+        mostrarNotificacionSeleccionada(listaNotificacionesPersonal3);
+    }
+});
+
     setLocationRelativeTo(null); // Centrar la ventana
 
     if (alumno != null) {
         lblBienvenida.setText("Bienvenido, " + alumno.getNombre() + " " + alumno.getApellido());
+        
     } else {
         lblBienvenida.setText("Bienvenido, Alumno desconocido");
     }
     
     }
-      
+    
+    private void cargarNotificacionesGrupales() {
+    if (alumno != null) {
+        System.out.println("Alumno encontrado: " + alumno.getNombre());
+
+        // Obtener el ID del grupo asociado al alumno
+        AlumnoController alumnoController = new AlumnoController();
+        int idGrupoAlumno = alumnoController.obtenerIdGrupoPorAlumno(alumno.getId());
+        System.out.println("ID del grupo: " + idGrupoAlumno);
+        System.out.println("ID del grupo del alumno: " + idGrupoAlumno);
+
+        if (idGrupoAlumno != -1) { // Verifica que se haya encontrado un grupo
+            NotificacionController notificacionController = new NotificacionController();
+            List<Notificacion> notificaciones = notificacionController.obtenerNotificacionesPorGrupo(idGrupoAlumno);
+            System.out.println("Notificaciones encontradas: " + notificaciones.size());
+
+            DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
+            for (Notificacion notificacion : notificaciones) {
+                System.out.println("Agregando notificación: " + notificacion.getTitulo());
+                notificacionesModel.addElement(notificacion.getTitulo() + " - " + notificacion.getMensaje());
+            }
+
+            listaNotificacionesGrupales.setModel(notificacionesModel);
+        } else {
+            System.out.println("El alumno no pertenece a ningún grupo.");
+        }
+    } else {
+        System.out.println("Alumno no encontrado.");
+    }
+}
+  private void cargarNotificacionesPersonales() {
+    if (alumno != null) {
+        // Obtener el ID del alumno
+        int idAlumno = alumno.getId();
+        System.out.println("Cargando notificaciones personales para el alumno con ID: " + idAlumno);
+
+        NotificacionController notificacionController = new NotificacionController();
+        List<Notificacion> notificaciones = notificacionController.obtenerNotificacionesPorAlumno(idAlumno);
+
+        if (notificaciones != null && !notificaciones.isEmpty()) {
+            System.out.println("Notificaciones personales encontradas: " + notificaciones.size());
+
+            DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
+            DocenteController docenteController = new DocenteController();
+
+            for (Notificacion notificacion : notificaciones) {
+                int docenteId = notificacion.getIdDocente();
+                String nombreDocente = "Sin docente asignado";
+
+                // Si existe un docente asociado, obtener su información
+                if (docenteId != 0) {
+                    Docente docente = docenteController.obtenerDocentePorId(docenteId);
+                    if (docente != null) {
+                        nombreDocente = docente.getNombre() + " " + docente.getApellido();
+                    }
+                }
+
+                System.out.println("Agregando notificación personal: " + notificacion.getTitulo());
+                notificacionesModel.addElement(notificacion.getTitulo() + " - " + notificacion.getMensaje() + " - " + nombreDocente);
+            }
+
+            listaNotificacionesPersonal3.setModel(notificacionesModel); // Asignar a la lista de notificaciones personales
+        } else {
+            System.out.println("No se encontraron notificaciones personales para el alumno.");
+        }
+    } else {
+        System.out.println("El objeto alumno es nulo. No se pueden cargar las notificaciones personales.");
+    }
+}
+
+private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
+    // Verifica si hay un elemento seleccionado
+    int selectedIndex = lista.getSelectedIndex();
+    if (selectedIndex != -1) {
+        // Obtén el modelo de la lista
+        DefaultListModel<String> modelo = (DefaultListModel<String>) lista.getModel();
+        // Obtén la notificación seleccionada
+        String notificacionSeleccionada = modelo.getElementAt(selectedIndex);
+        // Muestra la notificación en el JTextField
+        jTextField1.setText(notificacionSeleccionada);
+    }
+}
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -59,10 +163,12 @@ public class AlumnoView extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jScrollPane8 = new javax.swing.JScrollPane();
-        listaNotificaciones3 = new javax.swing.JList<>();
+        listaNotificacionesGrupales = new javax.swing.JList<>();
         jScrollPane9 = new javax.swing.JScrollPane();
         listaNotificacionesPersonal3 = new javax.swing.JList<>();
         jLabel8 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jComboBox1 = new javax.swing.JComboBox<>();
@@ -140,27 +246,27 @@ public class AlumnoView extends javax.swing.JFrame {
         jLabel4.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel4.setText("Notificaciones para tu grupo");
 
-        listaNotificaciones3.setFont(new java.awt.Font("Poppins", 0, 10)); // NOI18N
-        listaNotificaciones3.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        listaNotificaciones3.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        listaNotificaciones3.setSelectionBackground(new java.awt.Color(0, 0, 204));
-        listaNotificaciones3.setSelectionForeground(new java.awt.Color(255, 255, 255));
-        jScrollPane8.setViewportView(listaNotificaciones3);
+        listaNotificacionesGrupales.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        listaNotificacionesGrupales.setModel(listaNotificacionesGrupales.getModel());
+        listaNotificacionesGrupales.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        listaNotificacionesGrupales.setSelectionBackground(new java.awt.Color(0, 0, 204));
+        listaNotificacionesGrupales.setSelectionForeground(new java.awt.Color(255, 255, 255));
+        jScrollPane8.setViewportView(listaNotificacionesGrupales);
 
-        listaNotificacionesPersonal3.setFont(new java.awt.Font("Poppins", 0, 10)); // NOI18N
-        listaNotificacionesPersonal3.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
+        listaNotificacionesPersonal3.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        listaNotificacionesPersonal3.setModel(listaNotificacionesPersonal3.getModel());
+        listaNotificacionesPersonal3.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane9.setViewportView(listaNotificacionesPersonal3);
 
         jLabel8.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel8.setText("Notificaciones para ti");
+
+        jTextField1.setEditable(false);
+        jTextField1.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jTextField1.setBorder(null);
+
+        jLabel6.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jLabel6.setText("Notificación");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -169,26 +275,38 @@ public class AlumnoView extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel8))
-                .addGap(37, 37, 37))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jTextField1)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel4))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel8))))
+                        .addGap(37, 37, 37))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(4, 4, 4)
+                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(7, 7, 7)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(112, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane9)
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE))
+                .addContainerGap(44, Short.MAX_VALUE))
         );
 
         jTabbedPane4.addTab("Ver Notificaciones", jPanel1);
@@ -200,11 +318,6 @@ public class AlumnoView extends javax.swing.JFrame {
         jComboBox1.setForeground(new java.awt.Color(0, 51, 153));
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         jComboBox1.setBorder(null);
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
-            }
-        });
         jScrollPane1.setViewportView(jComboBox1);
 
         jPanel6.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 30, 255, 50));
@@ -319,14 +432,11 @@ public class AlumnoView extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNombreUsuarioActionPerformed
 
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jComboBox1ActionPerformed
-
     private void closeSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeSessionActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_closeSessionActionPerformed
 
+    
     /**
      * @param args the command line arguments
      */
@@ -354,6 +464,7 @@ public class AlumnoView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
@@ -369,8 +480,9 @@ public class AlumnoView extends javax.swing.JFrame {
     private javax.swing.JTabbedPane jTabbedPane4;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel lblBienvenida;
-    private javax.swing.JList<String> listaNotificaciones3;
+    private javax.swing.JList<String> listaNotificacionesGrupales;
     private javax.swing.JList<String> listaNotificacionesPersonal3;
     private javax.swing.JPanel mainPanel3;
     private javax.swing.JPasswordField txtContrasena;

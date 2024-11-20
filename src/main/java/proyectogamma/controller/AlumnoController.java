@@ -10,7 +10,7 @@ import proyectogamma.model.BaseDatos;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
+import proyectogamma.model.Usuario;
 public class AlumnoController {
 
     // Método para obtener todos los alumnos
@@ -74,17 +74,13 @@ public class AlumnoController {
     return alumno;
 }
 
-
     public boolean agregarAlumno(Alumno alumno, String nombreUsuario, String contrasena, int idGrupo) {
     String sqlAlumno = "INSERT INTO alumno (nombre, apellido, email, fecha_nacimiento, fecha_registro) " +
                        "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
-    String sqlUsuario = "INSERT INTO usuario (nombre_usuario, contrasena, rol, id_alumno) " +
-                        "VALUES (?, ?, 'Alumno', ?)";
     String sqlAsignarGrupo = "INSERT INTO alumno_grupos (id_alumno, id_grupo) VALUES (?, ?)";
 
     Connection conn = null;
     PreparedStatement pstmtAlumno = null;
-    PreparedStatement pstmtUsuario = null;
     PreparedStatement pstmtAsignarGrupo = null;
 
     try {
@@ -110,15 +106,12 @@ public class AlumnoController {
         }
         int idAlumno = generatedKeys.getInt(1);
 
-        // Insertar el usuario asociado al alumno
-        pstmtUsuario = conn.prepareStatement(sqlUsuario);
-        pstmtUsuario.setString(1, nombreUsuario);
-        pstmtUsuario.setString(2, contrasena); // **Importante: En un entorno real, esta contraseña debería ser encriptada.**
-        pstmtUsuario.setInt(3, idAlumno);
+        // Crear el usuario asociado al alumno
+        UsuarioController usuarioController = new UsuarioController();
+        Usuario usuario = new Usuario(0, nombreUsuario, contrasena, "Alumno", idAlumno, null, null);
 
-        int rowsInsertedUsuario = pstmtUsuario.executeUpdate();
-        if (rowsInsertedUsuario == 0) {
-            throw new SQLException("Fallo al insertar el usuario.");
+        if (!usuarioController.agregarUsuario(usuario)) {
+            throw new SQLException("Fallo al insertar el usuario asociado al alumno.");
         }
 
         // Asignar al alumno al grupo
@@ -148,7 +141,6 @@ public class AlumnoController {
     } finally {
         try {
             if (pstmtAlumno != null) pstmtAlumno.close();
-            if (pstmtUsuario != null) pstmtUsuario.close();
             if (pstmtAsignarGrupo != null) pstmtAsignarGrupo.close();
             if (conn != null) conn.close();
         } catch (SQLException closeEx) {
@@ -214,4 +206,23 @@ public class AlumnoController {
             return false;
         }
     }
+
+    public int obtenerIdGrupoPorAlumno(int idAlumno) {
+    String sql = "SELECT id_grupo FROM alumno_grupos WHERE id_alumno = ?";
+    int idGrupo = -1;
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idAlumno);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            idGrupo = rs.getInt("id_grupo");
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener el grupo del alumno: " + e.getMessage());
+    }
+    return idGrupo;}
 }
