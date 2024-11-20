@@ -6,10 +6,16 @@ package proyectogamma.views;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.ui.FlatComboBoxUI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.DefaultListModel;
+import javax.swing.RowFilter;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import proyectogamma.model.Usuario;
 import proyectogamma.model.Alumno;
 import proyectogamma.controller.UsuarioController;
@@ -55,6 +61,13 @@ listaNotificacionesPersonal3.addListSelectionListener(e -> {
     if (!e.getValueIsAdjusting()) {
         mostrarNotificacionSeleccionada(listaNotificacionesPersonal3);
     }
+});
+cargarAsignaturas();
+cargarTodasLasNotas();
+mostrarPromediosDesdeTabla();
+jComboBox1.addActionListener(e -> {
+    String asignaturaSeleccionada = (String) jComboBox1.getSelectedItem();
+    cargarNotasPorAsignatura(asignaturaSeleccionada);
 });
 
     setLocationRelativeTo(null); // Centrar la ventana
@@ -149,6 +162,94 @@ private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
         jTextField1.setText(notificacionSeleccionada);
     }
 }
+private void cargarTodasLasNotas() {
+    if (alumno != null) {
+        AlumnoController alumnoController = new AlumnoController();
+        List<String[]> todasLasNotas = alumnoController.obtenerTodasLasNotasPorAlumno(alumno.getId());
+
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.addColumn("Asignatura");
+        modelo.addColumn("Nota");
+        modelo.addColumn("Fecha");
+
+        for (String[] nota : todasLasNotas) {
+            modelo.addRow(nota);
+        }
+
+        tablaNotas.setModel(modelo);
+    }
+}
+private void cargarNotasPorAsignatura(String asignaturaSeleccionada) {
+    if (asignaturaSeleccionada != null) {
+        DefaultTableModel modelo = (DefaultTableModel) tablaNotas.getModel();
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(modelo);
+        tablaNotas.setRowSorter(sorter);
+
+        if (!asignaturaSeleccionada.equals("Todas")) {
+            sorter.setRowFilter(RowFilter.regexFilter(asignaturaSeleccionada, 0)); 
+        } else {
+            sorter.setRowFilter(null); 
+        }
+    }
+}
+
+private void cargarAsignaturas() {
+    if (alumno != null) {
+        AlumnoController alumnoController = new AlumnoController();
+        int idGrupo = new AlumnoController().obtenerIdGrupoPorAlumno(alumno.getId());
+        List<String> asignaturas = alumnoController.obtenerAsignaturasPorGrupo(idGrupo);
+
+        if (!asignaturas.isEmpty()) {
+            asignaturas.forEach(asignatura -> jComboBox1.addItem(asignatura));
+        } else {
+            System.out.println("No se encontraron asignaturas para el grupo.");
+        }
+    }
+}
+private void mostrarPromediosDesdeTabla() {
+    DefaultTableModel modelo = (DefaultTableModel) tablaNotas.getModel();
+
+    if (modelo.getRowCount() > 0) {
+        // Map para almacenar las notas agrupadas por asignatura
+        Map<String, List<Double>> asignaturaNotas = new HashMap<>();
+
+        // Recorrer las filas de la tabla y agrupar notas por asignatura
+        for (int i = 0; i < modelo.getRowCount(); i++) {
+            String asignatura = (String) modelo.getValueAt(i, 0); // Columna "Asignatura"
+            double nota = Double.parseDouble(modelo.getValueAt(i, 1).toString()); // Columna "Nota"
+
+            asignaturaNotas.putIfAbsent(asignatura, new ArrayList<>());
+            asignaturaNotas.get(asignatura).add(nota);
+        }
+
+        // Construir el texto para los promedios
+        StringBuilder textoPromedios = new StringBuilder("Promedios por asignatura:\n");
+        double sumaGeneral = 0;
+        int totalNotas = 0;
+
+        for (Map.Entry<String, List<Double>> entry : asignaturaNotas.entrySet()) {
+            String asignatura = entry.getKey();
+            List<Double> notas = entry.getValue();
+
+            // Calcular promedio por asignatura
+            double promedio = notas.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+            textoPromedios.append("- ").append(asignatura).append(": ").append(String.format("%.2f", promedio)).append("\n");
+
+            // Sumar para el promedio general
+            sumaGeneral += notas.stream().mapToDouble(Double::doubleValue).sum();
+            totalNotas += notas.size();
+        }
+
+        // Calcular promedio general
+        double promedioGeneral = totalNotas > 0 ? sumaGeneral / totalNotas : 0.0;
+        textoPromedios.append("\nPromedio general: ").append(String.format("%.2f", promedioGeneral));
+
+        // Mostrar en jTextArea1
+        jTextArea1.setText(textoPromedios.toString());
+    } else {
+        jTextArea1.setText("No hay notas disponibles para calcular los promedios.");
+    }
+}
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -175,18 +276,19 @@ private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jScrollPane10 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tablaNotas = new javax.swing.JTable();
         jLabel11 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
         jScrollPane11 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         jLabel14 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
-        txtNombreUsuario = new javax.swing.JTextField();
-        jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        txtContrasena = new javax.swing.JPasswordField();
-        btnLogin = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
+        txtContrasena = new javax.swing.JTextField();
+        txtContrasena2 = new javax.swing.JPasswordField();
+        CambioContraseña = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Bienvenido");
@@ -249,13 +351,17 @@ private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
         listaNotificacionesGrupales.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         listaNotificacionesGrupales.setModel(listaNotificacionesGrupales.getModel());
         listaNotificacionesGrupales.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        listaNotificacionesGrupales.setFixedCellHeight(60);
         listaNotificacionesGrupales.setSelectionBackground(new java.awt.Color(0, 0, 204));
         listaNotificacionesGrupales.setSelectionForeground(new java.awt.Color(255, 255, 255));
+        listaNotificacionesGrupales.setVisibleRowCount(4);
         jScrollPane8.setViewportView(listaNotificacionesGrupales);
 
         listaNotificacionesPersonal3.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         listaNotificacionesPersonal3.setModel(listaNotificacionesPersonal3.getModel());
         listaNotificacionesPersonal3.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        listaNotificacionesPersonal3.setFixedCellHeight(60);
+        listaNotificacionesPersonal3.setVisibleRowCount(4);
         jScrollPane9.setViewportView(listaNotificacionesPersonal3);
 
         jLabel8.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
@@ -314,27 +420,30 @@ private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
         jPanel6.setBackground(new java.awt.Color(255, 255, 255));
         jPanel6.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        jScrollPane1.setBorder(null);
+
         jComboBox1.setFont(new java.awt.Font("Poppins", 3, 14)); // NOI18N
         jComboBox1.setForeground(new java.awt.Color(0, 51, 153));
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox1.setModel(jComboBox1.getModel());
         jComboBox1.setBorder(null);
         jScrollPane1.setViewportView(jComboBox1);
 
-        jPanel6.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 30, 255, 50));
+        jPanel6.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 255, 50));
 
         jLabel9.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel9.setText("Notas");
-        jPanel6.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(298, 6, -1, 20));
+        jPanel6.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 40, -1, 20));
 
         jLabel10.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel10.setText("Asignaturas");
-        jPanel6.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 6, -1, 20));
+        jPanel6.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 40, -1, 20));
 
         jScrollPane10.setBorder(null);
         jScrollPane10.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
 
-        jTable1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tablaNotas.setBackground(new java.awt.Color(255, 255, 255));
+        tablaNotas.setFont(new java.awt.Font("Poppins", 0, 14)); // NOI18N
+        tablaNotas.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -353,21 +462,37 @@ private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane10.setViewportView(jTable1);
+        tablaNotas.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tablaNotas.setEnabled(false);
+        tablaNotas.setIntercellSpacing(new java.awt.Dimension(0, 10));
+        tablaNotas.setRowHeight(60);
+        tablaNotas.setShowGrid(true);
+        tablaNotas.setShowHorizontalLines(false);
+        jScrollPane10.setViewportView(tablaNotas);
 
-        jPanel6.add(jScrollPane10, new org.netbeans.lib.awtextra.AbsoluteConstraints(298, 30, 456, 454));
+        jPanel6.add(jScrollPane10, new org.netbeans.lib.awtextra.AbsoluteConstraints(298, 64, 456, 420));
 
         jLabel11.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel11.setText("Promedios");
-        jPanel6.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 100, -1, 20));
+        jPanel6.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 230, -1, 20));
 
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
+        jPanel6.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 410, -1, -1));
+
+        jScrollPane11.setBorder(null);
+
+        jTextArea1.setBackground(new java.awt.Color(255, 255, 255));
         jTextArea1.setColumns(20);
         jTextArea1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         jTextArea1.setRows(5);
+        jTextArea1.setBorder(null);
         jScrollPane11.setViewportView(jTextArea1);
 
-        jPanel6.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 124, 255, 160));
+        jPanel6.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 264, 255, 210));
         jPanel6.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 98, 255, 20));
+
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
+        jPanel6.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(-20, 200, -1, -1));
 
         jTabbedPane4.addTab("Ver Asignaturas", jPanel6);
 
@@ -375,33 +500,34 @@ private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
         jPanel7.setDoubleBuffered(false);
         jPanel7.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        txtNombreUsuario.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtNombreUsuarioActionPerformed(evt);
-            }
-        });
-        jPanel7.add(txtNombreUsuario, new org.netbeans.lib.awtextra.AbsoluteConstraints(457, 122, 195, -1));
-
-        jLabel12.setFont(new java.awt.Font("Trebuchet MS", 1, 14)); // NOI18N
-        jLabel12.setText("Usuario");
-        jPanel7.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(457, 98, -1, -1));
-
-        jLabel13.setFont(new java.awt.Font("Trebuchet MS", 1, 14)); // NOI18N
-        jLabel13.setText("Contraseña");
-        jPanel7.add(jLabel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(457, 162, -1, -1));
-        jPanel7.add(txtContrasena, new org.netbeans.lib.awtextra.AbsoluteConstraints(457, 206, 195, -1));
-
-        btnLogin.setText("Ingresar");
-        btnLogin.setActionCommand("login");
-        btnLogin.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnLoginlogin(evt);
-            }
-        });
-        jPanel7.add(btnLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(580, 244, -1, -1));
-
         jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
-        jPanel7.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 30, 80, 70));
+        jPanel7.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 50, 80, 70));
+
+        txtContrasena.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtContrasena.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Contraseña", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Poppins", 1, 14), new java.awt.Color(0, 0, 204))); // NOI18N
+        jPanel7.add(txtContrasena, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 160, 230, 50));
+
+        txtContrasena2.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtContrasena2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Contraseña", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Poppins", 1, 14), new java.awt.Color(0, 0, 204))); // NOI18N
+        jPanel7.add(txtContrasena2, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 240, 230, 50));
+
+        CambioContraseña.setBackground(new java.awt.Color(0, 0, 204));
+        CambioContraseña.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        CambioContraseña.setForeground(new java.awt.Color(255, 255, 255));
+        CambioContraseña.setText("Ingresar");
+        CambioContraseña.setActionCommand("login");
+        CambioContraseña.setBorder(null);
+        CambioContraseña.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CambioContraseñalogin(evt);
+            }
+        });
+        jPanel7.add(CambioContraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 310, 100, 30));
+
+        jLabel3.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(0, 0, 204));
+        jLabel3.setText("CAMBIO DE CONTRASEÑA");
+        jPanel7.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 130, -1, -1));
 
         jTabbedPane4.addTab("Cambio de Contraseña", jPanel7);
 
@@ -424,17 +550,26 @@ private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnLoginlogin(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginlogin
-
-    }//GEN-LAST:event_btnLoginlogin
-
-    private void txtNombreUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreUsuarioActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtNombreUsuarioActionPerformed
-
     private void closeSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeSessionActionPerformed
-        // TODO add your handling code here:
+           int confirm = javax.swing.JOptionPane.showConfirmDialog(
+            this,
+            "¿Estás seguro de que quieres cerrar sesión?",
+            "Confirmar cierre de sesión",
+            javax.swing.JOptionPane.YES_NO_OPTION
+    );
+
+    if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+        System.out.println("Cerrando sesión...");
+        // Cerrar la aplicación
+        System.exit(0);
+    } else {
+        System.out.println("El usuario canceló el cierre de sesión.");
+    }
     }//GEN-LAST:event_closeSessionActionPerformed
+
+    private void CambioContraseñalogin(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CambioContraseñalogin
+        
+    }//GEN-LAST:event_CambioContraseñalogin
 
     
     /**
@@ -454,14 +589,15 @@ private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnLogin;
+    private javax.swing.JButton CambioContraseña;
     private javax.swing.JButton closeSession;
     private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -478,14 +614,14 @@ private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JTabbedPane jTabbedPane4;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel lblBienvenida;
     private javax.swing.JList<String> listaNotificacionesGrupales;
     private javax.swing.JList<String> listaNotificacionesPersonal3;
     private javax.swing.JPanel mainPanel3;
-    private javax.swing.JPasswordField txtContrasena;
-    private javax.swing.JTextField txtNombreUsuario;
+    private javax.swing.JTable tablaNotas;
+    private javax.swing.JTextField txtContrasena;
+    private javax.swing.JPasswordField txtContrasena2;
     // End of variables declaration//GEN-END:variables
 }

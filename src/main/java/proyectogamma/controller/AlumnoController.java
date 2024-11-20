@@ -148,6 +148,88 @@ public class AlumnoController {
         }
     }
 }
+    public List<String> obtenerAsignaturasPorGrupo(int idGrupo) {
+    List<String> asignaturas = new ArrayList<>();
+    String sql = """
+        SELECT a.nombre
+        FROM grupo_asignaturas ga
+        JOIN asignatura a ON ga.id_asignatura = a.id
+        WHERE ga.id_grupo = ?
+    """;
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idGrupo);
+        ResultSet rs = pstmt.executeQuery();
+
+        while (rs.next()) {
+            asignaturas.add(rs.getString("nombre"));
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener asignaturas por grupo: " + e.getMessage());
+    }
+
+    return asignaturas;
+}
+    public List<String[]> obtenerTodasLasNotasPorAlumno(int idAlumno) {
+    List<String[]> notas = new ArrayList<>();
+    String sql = """
+        SELECT a.nombre AS asignatura, c.nota, c.fecha
+        FROM calificacion c
+        JOIN asignatura a ON c.id_asignatura = a.id
+        WHERE c.id_alumno = ?
+    """;
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idAlumno);
+        ResultSet rs = pstmt.executeQuery();
+
+        while (rs.next()) {
+            String asignatura = rs.getString("asignatura");
+            String nota = String.valueOf(rs.getDouble("nota"));
+            String fecha = rs.getString("fecha");
+            notas.add(new String[]{asignatura, nota, fecha});
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener todas las notas del alumno: " + e.getMessage());
+    }
+
+    return notas;
+}
+
+public List<String[]> obtenerNotasPorAsignatura(int idAlumno, String nombreAsignatura) {
+    List<String[]> notas = new ArrayList<>();
+    String sql = """
+        SELECT c.nota, c.fecha
+        FROM calificacion c
+        JOIN asignatura a ON c.id_asignatura = a.id
+        WHERE c.id_alumno = ? AND a.nombre = ?
+    """;
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idAlumno);
+        pstmt.setString(2, nombreAsignatura);
+        ResultSet rs = pstmt.executeQuery();
+
+        while (rs.next()) {
+            String nota = String.valueOf(rs.getDouble("nota"));
+            String fecha = rs.getString("fecha");
+            notas.add(new String[]{nota, fecha});
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener notas del alumno: " + e.getMessage());
+    }
+
+    return notas;
+}
 
 
     // Método para actualizar un alumno existente
