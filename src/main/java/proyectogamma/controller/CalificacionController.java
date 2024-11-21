@@ -21,7 +21,13 @@ public class CalificacionController {
     // Método para obtener todas las calificaciones
     public List<Calificacion> obtenerCalificaciones() {
         List<Calificacion> calificaciones = new ArrayList<>();
-        String sql = "SELECT * FROM calificacion";
+        String sql = """
+    SELECT c.*, a.nombre AS nombre_asignatura, e.nombre AS nombre_examen
+    FROM calificacion c
+    JOIN asignatura a ON c.id_asignatura = a.id
+    JOIN evaluaciones e ON c.id_examen = e.id
+""";
+
 
         try (Connection conn = BaseDatos.getConnection();
              Statement stmt = conn.createStatement();
@@ -29,12 +35,14 @@ public class CalificacionController {
 
             while (rs.next()) {
                 Calificacion calificacion = new Calificacion(
-                        rs.getInt("id"),
-                        rs.getInt("id_alumno"),
-                        rs.getInt("id_asignatura"),
-                        rs.getDouble("nota"),
-                        rs.getTimestamp("fecha")
-                );
+    rs.getInt("id"),
+    rs.getInt("id_alumno"),
+    rs.getInt("id_asignatura"),
+    rs.getDouble("nota"),
+    rs.getInt("id_examen"),
+    rs.getTimestamp("fecha")
+);
+
                 calificaciones.add(calificacion);
             }
 
@@ -57,13 +65,15 @@ public class CalificacionController {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    calificacion = new Calificacion(
-                            rs.getInt("id"),
-                            rs.getInt("id_alumno"),
-                            rs.getInt("id_asignatura"),
-                            rs.getDouble("nota"),
-                            rs.getTimestamp("fecha")
-                    );
+                     calificacion = new Calificacion(
+    rs.getInt("id"),
+    rs.getInt("id_alumno"),
+    rs.getInt("id_asignatura"),
+    rs.getDouble("nota"),
+    rs.getInt("id_examen"),
+    rs.getTimestamp("fecha")
+);
+
                 }
             }
 
@@ -76,7 +86,7 @@ public class CalificacionController {
 
     // Método para agregar una nueva calificación
     public boolean agregarCalificacion(Calificacion calificacion) {
-        String sql = "INSERT INTO calificacion (id_alumno, id_asignatura, nota, fecha) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO calificacion (id_alumno, id_asignatura, nota, fecha,id_examen) VALUES (?, ?, ?, ?,?)";
 
         try (Connection conn = BaseDatos.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -85,6 +95,7 @@ public class CalificacionController {
             pstmt.setInt(2, calificacion.getIdAsignatura());
             pstmt.setDouble(3, calificacion.getNota());
             pstmt.setTimestamp(4, new Timestamp(calificacion.getFecha().getTime()));
+            pstmt.setInt(5, calificacion.getIdExamen());
 
             int rowsInserted = pstmt.executeUpdate();
             return rowsInserted > 0;
@@ -95,28 +106,7 @@ public class CalificacionController {
         }
     }
 
-    // Método para actualizar una calificación existente
-    public boolean actualizarCalificacion(Calificacion calificacion) {
-        String sql = "UPDATE calificacion SET id_alumno = ?, id_asignatura = ?, nota = ?, fecha = ? WHERE id = ?";
-
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, calificacion.getIdAlumno());
-            pstmt.setInt(2, calificacion.getIdAsignatura());
-            pstmt.setDouble(3, calificacion.getNota());
-            pstmt.setTimestamp(4, new Timestamp(calificacion.getFecha().getTime()));
-            pstmt.setInt(5, calificacion.getId());
-
-            int rowsUpdated = pstmt.executeUpdate();
-            return rowsUpdated > 0;
-
-        } catch (SQLException e) {
-            System.out.println("Error al actualizar calificación: " + e.getMessage());
-            return false;
-        }
-    }
-
+   
     // Método para eliminar una calificación por ID
     public boolean eliminarCalificacion(int id) {
         String sql = "DELETE FROM calificacion WHERE id = ?";
