@@ -73,6 +73,27 @@ public class AlumnoController {
 
     return alumno;
 }
+   public Integer obtenerIdAlumnoPorNombre(String nombreCompleto) {
+    String sql = "SELECT id FROM alumno WHERE CONCAT(nombre, ' ', apellido) = ?";
+    Integer idAlumno = null;
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, nombreCompleto);
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            idAlumno = rs.getInt("id");
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener ID del alumno por nombre completo: " + e.getMessage());
+    }
+
+    return idAlumno;
+}
+
 
     public boolean agregarAlumno(Alumno alumno, String nombreUsuario, String contrasena, int idGrupo) {
     String sqlAlumno = "INSERT INTO alumno (nombre, apellido, email, fecha_nacimiento, fecha_registro) " +
@@ -148,6 +169,31 @@ public class AlumnoController {
         }
     }
 }
+    public String obtenerNombreAlumnoPorId(int idAlumno) {
+    String sql = "SELECT nombre, apellido FROM alumno WHERE id = ?";
+    String nombreCompleto = null;
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idAlumno);
+        try (ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                String nombre = rs.getString("nombre");
+                String apellido = rs.getString("apellido");
+                nombreCompleto = nombre + " " + apellido;
+            } else {
+                System.out.println("No se encontró un alumno con ID: " + idAlumno);
+            }
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener el nombre del alumno: " + e.getMessage());
+    }
+
+    return nombreCompleto;
+}
+
     public List<String> obtenerAsignaturasPorGrupo(int idGrupo) {
     List<String> asignaturas = new ArrayList<>();
     String sql = """

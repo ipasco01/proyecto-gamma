@@ -3,6 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package proyectogamma.views;
+import com.formdev.flatlaf.FlatLightLaf;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import proyectogamma.model.Usuario;
 import proyectogamma.controller.UsuarioController;
 /**
@@ -16,6 +19,11 @@ public class LoginView extends javax.swing.JFrame {
      */
     public LoginView() {
         initComponents();
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -136,7 +144,8 @@ public class LoginView extends javax.swing.JFrame {
                     new AlumnoView(usuario).setVisible(true);
                     break;
                 case "Docente":
-                    //new DocenteView(usuario).setVisible(true);
+                    System.out.println("Cargando DocenteView para: " + usuario.getNombreUsuario());
+                    new DocenteView(usuario).setVisible(true);
                     break;
                 case "Padre":
                     //new PadreView(usuario).setVisible(true);

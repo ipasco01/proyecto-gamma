@@ -103,6 +103,67 @@ public class NotificacionController {
 
     return notificaciones;
 }
+public List<Notificacion> obtenerNotificacionesConDetallesPorDocente(int idDocente) {
+    List<Notificacion> notificaciones = new ArrayList<>();
+    String sql = """
+    SELECT n.id, n.titulo, n.mensaje, n.fecha_envio, 
+           n.id_alumno, n.id_grupo, n.id_docente,
+           g.nombre AS nombre_grupo, 
+           a.nombre AS nombre_alumno, a.apellido AS apellido_alumno
+    FROM notificacion n
+    LEFT JOIN grupos g ON n.id_grupo = g.id
+    LEFT JOIN alumno a ON n.id_alumno = a.id
+    WHERE n.id_docente = ?
+""";
+
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idDocente);
+        ResultSet rs = pstmt.executeQuery();
+
+        while (rs.next()) {
+            Integer idAlumno = null; // Usamos Integer para permitir valores null
+            Object idAlumnoObject = rs.getObject("id_alumno");
+            if (idAlumnoObject != null) {
+                idAlumno = (Integer) idAlumnoObject;
+            }
+            Integer idGrupo = null; // Usamos Integer para permitir valores null
+            Object idGrupoObject = rs.getObject("id_grupo");
+            if (idGrupoObject != null) {
+                idGrupo = (Integer) idGrupoObject;
+            }
+
+            Notificacion notificacion = new Notificacion(
+                    rs.getInt("id"),
+                    rs.getString("titulo"),
+                    rs.getString("mensaje"),
+                    rs.getTimestamp("fecha_envio"),
+                    idAlumno,
+                    idGrupo,
+                    idDocente
+            );
+            // Añade los nombres del grupo y alumno como propiedades adicionales (si las necesitas)
+            String nombreGrupo = rs.getString("nombre_grupo");
+            notificacion.setNombreGrupo(nombreGrupo != null ? nombreGrupo : "Sin Grupo");
+            String nombreAlumno = rs.getString("nombre_alumno");
+            String apellidoAlumno = rs.getString("apellido_alumno");
+            notificacion.setNombreAlumno(
+                    (nombreAlumno != null ? nombreAlumno : "") + " " + 
+                            (apellidoAlumno != null ? apellidoAlumno : "")
+            );
+
+            notificaciones.add(notificacion);
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener notificaciones con detalles: " + e.getMessage());
+    }
+
+    return notificaciones;
+}
+
 
     // Método para obtener una notificación por ID
     public Notificacion obtenerNotificacionPorId(int id) {
@@ -146,8 +207,8 @@ public class NotificacionController {
             pstmt.setString(1, notificacion.getTitulo());
             pstmt.setString(2, notificacion.getMensaje());
             pstmt.setTimestamp(3, new Timestamp(notificacion.getFechaEnvio().getTime()));
-            pstmt.setInt(4, notificacion.getIdAlumno());
-            pstmt.setInt(5, notificacion.getIdGrupo());
+            pstmt.setObject(4, notificacion.getIdAlumno(), java.sql.Types.INTEGER);
+            pstmt.setObject(5, notificacion.getIdGrupo(), java.sql.Types.INTEGER);
             pstmt.setInt(6, notificacion.getIdDocente());
 
             int rowsInserted = pstmt.executeUpdate();
@@ -170,8 +231,8 @@ public class NotificacionController {
             pstmt.setString(1, notificacion.getTitulo());
             pstmt.setString(2, notificacion.getMensaje());
             pstmt.setTimestamp(3, new Timestamp(notificacion.getFechaEnvio().getTime()));
-            pstmt.setInt(4, notificacion.getIdAlumno());
-            pstmt.setInt(5, notificacion.getIdGrupo());
+            pstmt.setObject(4, notificacion.getIdAlumno(), java.sql.Types.INTEGER);
+            pstmt.setObject(5, notificacion.getIdGrupo(), java.sql.Types.INTEGER);
             pstmt.setInt(6, notificacion.getIdDocente());
             pstmt.setInt(7, notificacion.getId());
 

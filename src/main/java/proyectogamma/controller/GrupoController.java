@@ -8,7 +8,7 @@ package proyectogamma.controller;
  *
  * @author Asus
  */
-import proyectogamma.model.Grupo;
+import proyectogamma.model.Grupos;
 import proyectogamma.model.BaseDatos;
 
 import java.sql.*;
@@ -18,8 +18,8 @@ import java.util.List;
 public class GrupoController {
 
     // Método para obtener todos los grupos
-    public List<Grupo> obtenerGrupos() {
-        List<Grupo> grupos = new ArrayList<>();
+    public List<Grupos> obtenerGrupos() {
+        List<Grupos> grupos = new ArrayList<>();
         String sql = "SELECT * FROM grupos";
 
         try (Connection conn = BaseDatos.getConnection();
@@ -27,7 +27,7 @@ public class GrupoController {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                Grupo grupo = new Grupo(
+                Grupos grupo = new Grupos(
                         rs.getInt("id"),
                         rs.getString("nombre"),
                         rs.getString("descripcion"),
@@ -42,11 +42,51 @@ public class GrupoController {
 
         return grupos;
     }
+   public Integer obtenerIdGrupoPorNombre(String nombreGrupo) {
+    String sql = "SELECT id FROM grupos WHERE nombre = ?";
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setString(1, nombreGrupo);
+        ResultSet rs = pstmt.executeQuery();
+        if (rs.next()) {
+            return rs.getInt("id");
+        } else {
+            System.out.println("No se encontró el grupo con nombre: " + nombreGrupo);
+            return null; // Retorna null si no se encuentra el grupo
+        }
+    } catch (SQLException e) {
+        System.out.println("Error al obtener el ID del grupo: " + e.getMessage());
+        return null; // Retorna null en caso de error
+    }
+}
+
+public String obtenerNombreGrupoPorId(int idGrupo) {
+    String sql = "SELECT nombre FROM grupos WHERE id = ?";
+    String nombreGrupo = null;
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idGrupo);
+        try (ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                nombreGrupo = rs.getString("nombre");
+            } else {
+                System.out.println("No se encontró un grupo con ID: " + idGrupo);
+            }
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener el nombre del grupo: " + e.getMessage());
+    }
+
+    return nombreGrupo;
+}
 
     // Método para obtener un grupo por ID
-    public Grupo obtenerGrupoPorId(int id) {
+    public Grupos obtenerGrupoPorId(int id) {
         String sql = "SELECT * FROM grupos WHERE id = ?";
-        Grupo grupo = null;
+        Grupos grupo = null;
 
         try (Connection conn = BaseDatos.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -55,7 +95,7 @@ public class GrupoController {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    grupo = new Grupo(
+                    grupo = new Grupos(
                             rs.getInt("id"),
                             rs.getString("nombre"),
                             rs.getString("descripcion"),
@@ -72,7 +112,7 @@ public class GrupoController {
     }
 
     // Método para agregar un nuevo grupo
-    public boolean agregarGrupo(Grupo grupo) {
+    public boolean agregarGrupo(Grupos grupo) {
         String sql = "INSERT INTO grupos (nombre, descripcion, fecha_creacion) VALUES (?, ?, CURRENT_TIMESTAMP)";
 
         try (Connection conn = BaseDatos.getConnection();
@@ -91,7 +131,7 @@ public class GrupoController {
     }
 
     // Método para actualizar un grupo existente
-    public boolean actualizarGrupo(Grupo grupo) {
+    public boolean actualizarGrupo(Grupos grupo) {
         String sql = "UPDATE grupos SET nombre = ?, descripcion = ? WHERE id = ?";
 
         try (Connection conn = BaseDatos.getConnection();

@@ -44,13 +44,11 @@ public class AlumnoView extends javax.swing.JFrame {
     initComponents();
     cargarNotificacionesGrupales(); 
     cargarNotificacionesPersonales(); 
-    try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
-         
-    jTabbedPane4.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());
+    
+    jTabbedPane4.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());     
+    jTabbedPane1.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());
+    jComboBox1.setUI(new com.formdev.flatlaf.ui.FlatComboBoxUI());
+
     listaNotificacionesGrupales.addListSelectionListener(e -> {
     if (!e.getValueIsAdjusting()) {
         mostrarNotificacionSeleccionada(listaNotificacionesGrupales);
@@ -88,7 +86,6 @@ jComboBox1.addActionListener(e -> {
         // Obtener el ID del grupo asociado al alumno
         AlumnoController alumnoController = new AlumnoController();
         int idGrupoAlumno = alumnoController.obtenerIdGrupoPorAlumno(alumno.getId());
-        System.out.println("ID del grupo: " + idGrupoAlumno);
         System.out.println("ID del grupo del alumno: " + idGrupoAlumno);
 
         if (idGrupoAlumno != -1) { // Verifica que se haya encontrado un grupo
@@ -284,11 +281,13 @@ private void mostrarPromediosDesdeTabla() {
         jLabel14 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
-        txtContrasena = new javax.swing.JTextField();
-        txtContrasena2 = new javax.swing.JPasswordField();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanel2 = new javax.swing.JPanel();
+        txtContrasena = new javax.swing.JPasswordField();
         CambioContraseña = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        txtContrasena2 = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Bienvenido");
@@ -441,7 +440,6 @@ private void mostrarPromediosDesdeTabla() {
         jScrollPane10.setBorder(null);
         jScrollPane10.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
 
-        tablaNotas.setBackground(new java.awt.Color(255, 255, 255));
         tablaNotas.setFont(new java.awt.Font("Poppins", 0, 14)); // NOI18N
         tablaNotas.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -481,7 +479,6 @@ private void mostrarPromediosDesdeTabla() {
 
         jScrollPane11.setBorder(null);
 
-        jTextArea1.setBackground(new java.awt.Color(255, 255, 255));
         jTextArea1.setColumns(20);
         jTextArea1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         jTextArea1.setRows(5);
@@ -500,21 +497,21 @@ private void mostrarPromediosDesdeTabla() {
         jPanel7.setDoubleBuffered(false);
         jPanel7.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
-        jPanel7.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 50, 80, 70));
+        jTabbedPane1.setForeground(new java.awt.Color(0, 0, 153));
+        jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.LEFT);
+        jTabbedPane1.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         txtContrasena.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         txtContrasena.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Contraseña", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Poppins", 1, 14), new java.awt.Color(0, 0, 204))); // NOI18N
-        jPanel7.add(txtContrasena, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 160, 230, 50));
-
-        txtContrasena2.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-        txtContrasena2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Contraseña", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Poppins", 1, 14), new java.awt.Color(0, 0, 204))); // NOI18N
-        jPanel7.add(txtContrasena2, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 240, 230, 50));
+        jPanel2.add(txtContrasena, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 250, 230, 50));
 
         CambioContraseña.setBackground(new java.awt.Color(0, 0, 204));
         CambioContraseña.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
         CambioContraseña.setForeground(new java.awt.Color(255, 255, 255));
-        CambioContraseña.setText("Ingresar");
+        CambioContraseña.setText("Cambiar Contraseña");
         CambioContraseña.setActionCommand("login");
         CambioContraseña.setBorder(null);
         CambioContraseña.addActionListener(new java.awt.event.ActionListener() {
@@ -522,14 +519,25 @@ private void mostrarPromediosDesdeTabla() {
                 CambioContraseñalogin(evt);
             }
         });
-        jPanel7.add(CambioContraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 310, 100, 30));
+        jPanel2.add(CambioContraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 380, 230, 30));
 
-        jLabel3.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(0, 0, 204));
-        jLabel3.setText("CAMBIO DE CONTRASEÑA");
-        jPanel7.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 130, -1, -1));
+        jLabel7.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(0, 0, 204));
+        jLabel7.setText("CAMBIO DE CONTRASEÑA");
+        jPanel2.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 200, -1, -1));
 
-        jTabbedPane4.addTab("Cambio de Contraseña", jPanel7);
+        jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
+        jPanel2.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 120, 80, 70));
+
+        txtContrasena2.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtContrasena2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Repetir Contraseña", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Poppins", 1, 14), new java.awt.Color(0, 0, 204))); // NOI18N
+        jPanel2.add(txtContrasena2, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 310, 230, 50));
+
+        jTabbedPane1.addTab("Cambio de Contraseña", jPanel2);
+
+        jPanel7.add(jTabbedPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 780, 520));
+
+        jTabbedPane4.addTab("Configuración", jPanel7);
 
         mainPanel3.add(jTabbedPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 3, 780, 560));
 
@@ -568,7 +576,30 @@ private void mostrarPromediosDesdeTabla() {
     }//GEN-LAST:event_closeSessionActionPerformed
 
     private void CambioContraseñalogin(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CambioContraseñalogin
-        
+
+            String contrasenaActual = new String(txtContrasena.getPassword());
+    String nuevaContrasena = new String(txtContrasena2.getPassword()); // Asegúrate de renombrar el campo para evitar confusión
+
+    if (contrasenaActual.isEmpty() || nuevaContrasena.isEmpty()) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Por favor, llena ambos campos.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    // Validar que la contraseña actual sea correcta
+    UsuarioController usuarioController = new UsuarioController();
+    Usuario usuarioValidado = usuarioController.login(usuario.getNombreUsuario(), contrasenaActual);
+
+    if (usuarioValidado != null) {
+        // Cambiar la contraseña
+        boolean cambioExitoso = usuarioController.cambiarContrasena(usuario.getId(), nuevaContrasena);
+        if (cambioExitoso) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Contraseña actualizada con éxito.", "Éxito", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(this, "Hubo un problema al cambiar la contraseña.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    } else {
+        javax.swing.JOptionPane.showMessageDialog(this, "La contraseña actual no es correcta.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
     }//GEN-LAST:event_CambioContraseñalogin
 
     
@@ -597,13 +628,14 @@ private void mostrarPromediosDesdeTabla() {
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
@@ -613,6 +645,7 @@ private void mostrarPromediosDesdeTabla() {
     private javax.swing.JScrollPane jScrollPane11;
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JScrollPane jScrollPane9;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane4;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
@@ -621,7 +654,7 @@ private void mostrarPromediosDesdeTabla() {
     private javax.swing.JList<String> listaNotificacionesPersonal3;
     private javax.swing.JPanel mainPanel3;
     private javax.swing.JTable tablaNotas;
-    private javax.swing.JTextField txtContrasena;
+    private javax.swing.JPasswordField txtContrasena;
     private javax.swing.JPasswordField txtContrasena2;
     // End of variables declaration//GEN-END:variables
 }

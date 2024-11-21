@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import proyectogamma.model.Docente;
 
 /**
  *
@@ -114,6 +115,24 @@ public class UsuarioController {
             return false;
         }
     }
+    public boolean cambiarContrasena(int idUsuario, String nuevaContrasena) {
+    String sql = "UPDATE usuario SET contrasena = ? WHERE id = ?";
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        // Encripta la contraseña antes de almacenarla (opcional)
+        pstmt.setString(1, nuevaContrasena);
+        pstmt.setInt(2, idUsuario);
+
+        int rowsUpdated = pstmt.executeUpdate();
+        return rowsUpdated > 0;
+
+    } catch (SQLException e) {
+        System.out.println("Error al cambiar la contraseña: " + e.getMessage());
+        return false;
+    }
+}
 
     // Método para obtener un usuario por ID
     public Usuario obtenerUsuarioPorId(int id) {
@@ -179,6 +198,41 @@ public class UsuarioController {
     return alumno;
 }
 
+public Docente obtenerDocentePorUsuario(Usuario usuario) {
+    String sql = """
+            SELECT a.id, a.nombre, a.apellido, a.email, a.especialidad, a.fecha_contratacion, a.fecha_registro
+        FROM usuario u
+        JOIN docente a ON u.id_docente = a.id
+        WHERE u.id = ?;
+    """;
 
+    Docente docente = null;
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, usuario.getId()); 
+        ResultSet rs = pstmt.executeQuery();
+
+        if (rs.next()) {
+            docente = new Docente(
+                    rs.getInt("id"),
+                    rs.getString("nombre"),
+                    rs.getString("apellido"),
+                    rs.getString("email"),
+                    rs.getString("especialidad"),
+                    rs.getDate("fecha_contratacion"),
+                    rs.getTimestamp("fecha_registro")
+            );
+        } else {
+            System.out.println("No se encontró un alumno asociado al usuario con ID: " + usuario.getId());
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener datos del alumno asociado: " + e.getMessage());
+    }
+
+    return docente;
+}
 
 }
