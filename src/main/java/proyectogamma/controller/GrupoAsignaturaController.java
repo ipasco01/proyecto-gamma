@@ -20,11 +20,9 @@ public class GrupoAsignaturaController {
     // Método para obtener todas las asignaciones de GrupoAsignatura
     public List<GrupoAsignatura> obtenerGrupoAsignaturas() {
         List<GrupoAsignatura> grupoAsignaturas = new ArrayList<>();
-        String sql = "SELECT * FROM grupo_asignatura";
+        String sql = "SELECT * FROM grupo_asignaturas";
 
-        try (Connection conn = BaseDatos.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 GrupoAsignatura grupoAsignatura = new GrupoAsignatura(
@@ -41,13 +39,37 @@ public class GrupoAsignaturaController {
         return grupoAsignaturas;
     }
 
+    public String obtenerAsignaturasHTMLPorGrupo(int idGrupo) {
+        StringBuilder html = new StringBuilder("<html><body>");
+        String sql = "SELECT a.nombre AS asignatura "
+                + "FROM grupo_asignaturas ga "
+                + "INNER JOIN asignatura a ON ga.id_asignatura = a.id "
+                + "WHERE ga.id_grupo = ?";
+
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idGrupo);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    html.append("- ").append(rs.getString("asignatura")).append("<br>");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener las asignaturas en formato HTML: " + e.getMessage());
+        }
+
+        html.append("</body></html>");
+        return html.toString();
+    }
+
     // Método para obtener una asignación por idGrupo e idAsignatura
     public GrupoAsignatura obtenerGrupoAsignatura(int idGrupo, int idAsignatura) {
-        String sql = "SELECT * FROM grupo_asignatura WHERE id_grupo = ? AND id_asignatura = ?";
+        String sql = "SELECT * FROM grupo_asignaturas WHERE id_grupo = ? AND id_asignatura = ?";
         GrupoAsignatura grupoAsignatura = null;
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, idGrupo);
             pstmt.setInt(2, idAsignatura);
@@ -70,10 +92,9 @@ public class GrupoAsignaturaController {
 
     // Método para agregar una nueva asignación de GrupoAsignatura
     public boolean agregarGrupoAsignatura(GrupoAsignatura grupoAsignatura) {
-        String sql = "INSERT INTO grupo_asignatura (id_grupo, id_asignatura) VALUES (?, ?)";
+        String sql = "INSERT INTO grupo_asignaturas (id_grupo, id_asignatura) VALUES (?, ?)";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, grupoAsignatura.getIdGrupo());
             pstmt.setInt(2, grupoAsignatura.getIdAsignatura());
@@ -89,10 +110,9 @@ public class GrupoAsignaturaController {
 
     // Método para actualizar una asignación existente
     public boolean actualizarGrupoAsignatura(int idGrupo, int idAsignatura, int nuevoIdAsignatura) {
-        String sql = "UPDATE grupo_asignatura SET id_asignatura = ? WHERE id_grupo = ? AND id_asignatura = ?";
+        String sql = "UPDATE grupo_asignaturas SET id_asignatura = ? WHERE id_grupo = ? AND id_asignatura = ?";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, nuevoIdAsignatura);
             pstmt.setInt(2, idGrupo);
@@ -111,8 +131,7 @@ public class GrupoAsignaturaController {
     public boolean eliminarGrupoAsignatura(int idGrupo, int idAsignatura) {
         String sql = "DELETE FROM grupo_asignatura WHERE id_grupo = ? AND id_asignatura = ?";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, idGrupo);
             pstmt.setInt(2, idAsignatura);

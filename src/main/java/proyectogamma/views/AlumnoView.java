@@ -23,233 +23,256 @@ import proyectogamma.model.Alumno;
 import proyectogamma.controller.UsuarioController;
 import proyectogamma.controller.NotificacionController;
 import proyectogamma.controller.AlumnoController;
+import proyectogamma.controller.AlumnoGrupoController;
 import proyectogamma.controller.DocenteController;
+import proyectogamma.controller.GrupoAsignaturaController;
+import proyectogamma.controller.GrupoController;
+import proyectogamma.model.AlumnoGrupos;
 import proyectogamma.model.Docente;
 import proyectogamma.model.Notificacion;
 import proyectogamma.utils.PDFGenerator;
+
 /**
  *
  * @author Isabel
  */
 public class AlumnoView extends javax.swing.JFrame {
-     private Usuario usuario;
-     private Alumno alumno;
-    
+
+    private Usuario usuario;
+    private Alumno alumno;
+
     public AlumnoView(Usuario usuario) {
-        
+
         this.usuario = usuario;
-         // Verificar si el usuario tiene un ID de alumno asociado
-    if (usuario.getIdAlumno() != null) {
-        UsuarioController usuarioController = new UsuarioController();
-        this.alumno = usuarioController.obtenerAlumnoPorUsuario(usuario);
-        System.out.println("Alumno cargado: " + alumno);
-    }
-    initComponents();
-    cargarNotificacionesGrupales(); 
-    cargarNotificacionesPersonales(); 
-    
-    jTabbedPane4.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());     
-    jTabbedPane1.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());
-    jComboBox1.setUI(new com.formdev.flatlaf.ui.FlatComboBoxUI());
-
-    listaNotificacionesGrupales.addListSelectionListener(e -> {
-    if (!e.getValueIsAdjusting()) {
-        mostrarNotificacionSeleccionada(listaNotificacionesGrupales);
-    }
-});
-
-listaNotificacionesPersonal3.addListSelectionListener(e -> {
-    if (!e.getValueIsAdjusting()) {
-        mostrarNotificacionSeleccionada(listaNotificacionesPersonal3);
-    }
-});
-cargarAsignaturas();
-cargarTodasLasNotas();
-mostrarPromediosDesdeTabla();
-jComboBox1.addActionListener(e -> {
-    String asignaturaSeleccionada = (String) jComboBox1.getSelectedItem();
-    cargarNotasPorAsignatura(asignaturaSeleccionada);
-});
-
-    setLocationRelativeTo(null); // Centrar la ventana
-
-    if (alumno != null) {
-        lblBienvenida.setText("Bienvenido, " + alumno.getNombre() + " " + alumno.getApellido());
-        
-    } else {
-        lblBienvenida.setText("Bienvenido, Alumno desconocido");
-    }
-    
-    }
-    
-    private void cargarNotificacionesGrupales() {
-    if (alumno != null) {
-        System.out.println("Alumno encontrado: " + alumno.getNombre());
-
-        // Obtener el ID del grupo asociado al alumno
-        AlumnoController alumnoController = new AlumnoController();
-        int idGrupoAlumno = alumnoController.obtenerIdGrupoPorAlumno(alumno.getId());
-        System.out.println("ID del grupo del alumno: " + idGrupoAlumno);
-
-        if (idGrupoAlumno != -1) { // Verifica que se haya encontrado un grupo
-            NotificacionController notificacionController = new NotificacionController();
-            List<Notificacion> notificaciones = notificacionController.obtenerNotificacionesPorGrupo(idGrupoAlumno);
-            System.out.println("Notificaciones encontradas: " + notificaciones.size());
-
-            DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
-            for (Notificacion notificacion : notificaciones) {
-                //System.out.println("Agregando notificación: " + notificacion.getTitulo());
-                notificacionesModel.addElement(notificacion.getTitulo() + " - " + notificacion.getMensaje());
-            }
-
-            listaNotificacionesGrupales.setModel(notificacionesModel);
-        } else {
-            System.out.println("El alumno no pertenece a ningún grupo.");
+        // Verificar si el usuario tiene un ID de alumno asociado
+        if (usuario.getIdAlumno() != null) {
+            UsuarioController usuarioController = new UsuarioController();
+            this.alumno = usuarioController.obtenerAlumnoPorUsuario(usuario);
+            System.out.println("Alumno cargado: " + alumno);
         }
-    } else {
-        System.out.println("Alumno no encontrado.");
+        initComponents();
+        cargarNotificacionesGrupales();
+        cargarNotificacionesPersonales();
+
+        jTabbedPane4.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());
+        jTabbedPane1.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());
+        jComboBox1.setUI(new com.formdev.flatlaf.ui.FlatComboBoxUI());
+
+        listaNotificacionesGrupales.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                mostrarNotificacionSeleccionada(listaNotificacionesGrupales);
+            }
+        });
+
+        listaNotificacionesPersonal3.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                mostrarNotificacionSeleccionada(listaNotificacionesPersonal3);
+            }
+        });
+        cargarAsignaturas();
+        cargarTodasLasNotas();
+        mostrarPromediosDesdeTabla();
+        jComboBox1.addActionListener(e -> {
+            String asignaturaSeleccionada = (String) jComboBox1.getSelectedItem();
+            cargarNotasPorAsignatura(asignaturaSeleccionada);
+        });
+
+        setLocationRelativeTo(null); // Centrar la ventana
+
+        if (alumno != null) {
+            lblBienvenida.setText("Hola, " + alumno.getNombre() + " " + alumno.getApellido());
+            AlumnoGrupoController alumnoGrupoController = new AlumnoGrupoController();
+            AlumnoGrupos alumnoGrupo = alumnoGrupoController.obtenerAlumnoGrupoPorIdAlumno(alumno.getId());
+            if (alumnoGrupo != null) {
+                GrupoController grupoController = new GrupoController();
+                String nombreGrupo = grupoController.obtenerNombreGrupoPorId(alumnoGrupo.getIdGrupo());
+                lblBienvenida1.setText("Grupo: " + (nombreGrupo != null ? nombreGrupo : "Sin Grupo"));
+                GrupoAsignaturaController grupoAsignaturaController = new GrupoAsignaturaController();
+    String asignaturasHTML = grupoAsignaturaController.obtenerAsignaturasHTMLPorGrupo(alumnoGrupo.getIdGrupo());
+
+    // Mostrar las asignaturas en el JLabel
+    lblAsignaturas.setText(asignaturasHTML);
+            } else {
+                lblBienvenida1.setText("Grupo: Sin Grupo");
+            }
+        } else {
+            lblBienvenida.setText("Bienvenido, Alumno desconocido");
+        }
+
     }
-}
-  private void cargarNotificacionesPersonales() {
-    if (alumno != null) {
-        // Obtener el ID del alumno
-        int idAlumno = alumno.getId();
-        //System.out.println("Cargando notificaciones personales para el alumno con ID: " + idAlumno);
 
-        NotificacionController notificacionController = new NotificacionController();
-        List<Notificacion> notificaciones = notificacionController.obtenerNotificacionesPorAlumno(idAlumno);
+    private void cargarNotificacionesGrupales() {
+        if (alumno != null) {
+            System.out.println("Alumno encontrado: " + alumno.getNombre());
 
-        if (notificaciones != null && !notificaciones.isEmpty()) {
-            //System.out.println("Notificaciones personales encontradas: " + notificaciones.size());
+            // Obtener el ID del grupo asociado al alumno
+            AlumnoController alumnoController = new AlumnoController();
+            int idGrupoAlumno = alumnoController.obtenerIdGrupoPorAlumno(alumno.getId());
+            System.out.println("ID del grupo del alumno: " + idGrupoAlumno);
 
-            DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
-            DocenteController docenteController = new DocenteController();
+            if (idGrupoAlumno != -1) { // Verifica que se haya encontrado un grupo
+                NotificacionController notificacionController = new NotificacionController();
+                List<Notificacion> notificaciones = notificacionController.obtenerNotificacionesPorGrupo(idGrupoAlumno);
+                System.out.println("Notificaciones encontradas: " + notificaciones.size());
 
-            for (Notificacion notificacion : notificaciones) {
-                int docenteId = notificacion.getIdDocente();
-                String nombreDocente = "Sin docente asignado";
-
-                // Si existe un docente asociado, obtener su información
-                if (docenteId != 0) {
-                    Docente docente = docenteController.obtenerDocentePorId(docenteId);
-                    if (docente != null) {
-                        nombreDocente = docente.getNombre() + " " + docente.getApellido();
-                    }
+                DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
+                for (Notificacion notificacion : notificaciones) {
+                    //System.out.println("Agregando notificación: " + notificacion.getTitulo());
+                    notificacionesModel.addElement(notificacion.getTitulo() + " - " + notificacion.getMensaje());
                 }
 
-                //System.out.println("Agregando notificación personal: " + notificacion.getTitulo());
-                notificacionesModel.addElement(notificacion.getTitulo() + " - " + notificacion.getMensaje() + " - " + nombreDocente);
+                listaNotificacionesGrupales.setModel(notificacionesModel);
+            } else {
+                System.out.println("El alumno no pertenece a ningún grupo.");
+            }
+        } else {
+            System.out.println("Alumno no encontrado.");
+        }
+    }
+
+    private void cargarNotificacionesPersonales() {
+        if (alumno != null) {
+            // Obtener el ID del alumno
+            int idAlumno = alumno.getId();
+            //System.out.println("Cargando notificaciones personales para el alumno con ID: " + idAlumno);
+
+            NotificacionController notificacionController = new NotificacionController();
+            List<Notificacion> notificaciones = notificacionController.obtenerNotificacionesPorAlumno(idAlumno);
+
+            if (notificaciones != null && !notificaciones.isEmpty()) {
+                //System.out.println("Notificaciones personales encontradas: " + notificaciones.size());
+
+                DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
+                DocenteController docenteController = new DocenteController();
+
+                for (Notificacion notificacion : notificaciones) {
+                    int docenteId = notificacion.getIdDocente();
+                    String nombreDocente = "Sin docente asignado";
+
+                    // Si existe un docente asociado, obtener su información
+                    if (docenteId != 0) {
+                        Docente docente = docenteController.obtenerDocentePorId(docenteId);
+                        if (docente != null) {
+                            nombreDocente = docente.getNombre() + " " + docente.getApellido();
+                        }
+                    }
+
+                    //System.out.println("Agregando notificación personal: " + notificacion.getTitulo());
+                    notificacionesModel.addElement(notificacion.getTitulo() + " - " + notificacion.getMensaje() + " - " + nombreDocente);
+                }
+
+                listaNotificacionesPersonal3.setModel(notificacionesModel); // Asignar a la lista de notificaciones personales
+            } else {
+                System.out.println("No se encontraron notificaciones personales para el alumno.");
+            }
+        } else {
+            System.out.println("El objeto alumno es nulo. No se pueden cargar las notificaciones personales.");
+        }
+    }
+
+    private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
+        // Verifica si hay un elemento seleccionado
+        int selectedIndex = lista.getSelectedIndex();
+        if (selectedIndex != -1) {
+            // Obtén el modelo de la lista
+            DefaultListModel<String> modelo = (DefaultListModel<String>) lista.getModel();
+            // Obtén la notificación seleccionada
+            String notificacionSeleccionada = modelo.getElementAt(selectedIndex);
+            // Muestra la notificación en el JTextField
+            jTextField1.setText(notificacionSeleccionada);
+        }
+    }
+
+    private void cargarTodasLasNotas() {
+        if (alumno != null) {
+            AlumnoController alumnoController = new AlumnoController();
+            List<String[]> todasLasNotas = alumnoController.obtenerTodasLasNotasPorAlumno(alumno.getId());
+
+            DefaultTableModel modelo = new DefaultTableModel();
+            modelo.addColumn("Asignatura");
+            modelo.addColumn("Nota");
+            modelo.addColumn("Fecha");
+
+            for (String[] nota : todasLasNotas) {
+                modelo.addRow(nota);
             }
 
-            listaNotificacionesPersonal3.setModel(notificacionesModel); // Asignar a la lista de notificaciones personales
-        } else {
-            System.out.println("No se encontraron notificaciones personales para el alumno.");
+            tablaNotas.setModel(modelo);
         }
-    } else {
-        System.out.println("El objeto alumno es nulo. No se pueden cargar las notificaciones personales.");
     }
-}
 
-private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
-    // Verifica si hay un elemento seleccionado
-    int selectedIndex = lista.getSelectedIndex();
-    if (selectedIndex != -1) {
-        // Obtén el modelo de la lista
-        DefaultListModel<String> modelo = (DefaultListModel<String>) lista.getModel();
-        // Obtén la notificación seleccionada
-        String notificacionSeleccionada = modelo.getElementAt(selectedIndex);
-        // Muestra la notificación en el JTextField
-        jTextField1.setText(notificacionSeleccionada);
-    }
-}
-private void cargarTodasLasNotas() {
-    if (alumno != null) {
-        AlumnoController alumnoController = new AlumnoController();
-        List<String[]> todasLasNotas = alumnoController.obtenerTodasLasNotasPorAlumno(alumno.getId());
+    private void cargarNotasPorAsignatura(String asignaturaSeleccionada) {
+        if (asignaturaSeleccionada != null) {
+            DefaultTableModel modelo = (DefaultTableModel) tablaNotas.getModel();
+            TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(modelo);
+            tablaNotas.setRowSorter(sorter);
 
-        DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("Asignatura");
-        modelo.addColumn("Nota");
-        modelo.addColumn("Fecha");
-
-        for (String[] nota : todasLasNotas) {
-            modelo.addRow(nota);
+            if (!asignaturaSeleccionada.equals("Todas")) {
+                sorter.setRowFilter(RowFilter.regexFilter(asignaturaSeleccionada, 0));
+            } else {
+                sorter.setRowFilter(null);
+            }
         }
-
-        tablaNotas.setModel(modelo);
     }
-}
-private void cargarNotasPorAsignatura(String asignaturaSeleccionada) {
-    if (asignaturaSeleccionada != null) {
+
+    private void cargarAsignaturas() {
+        if (alumno != null) {
+            AlumnoController alumnoController = new AlumnoController();
+            int idGrupo = new AlumnoController().obtenerIdGrupoPorAlumno(alumno.getId());
+            List<String> asignaturas = alumnoController.obtenerAsignaturasPorGrupo(idGrupo);
+
+            if (!asignaturas.isEmpty()) {
+                asignaturas.forEach(asignatura -> jComboBox1.addItem(asignatura));
+            } else {
+                System.out.println("No se encontraron asignaturas para el grupo.");
+            }
+        }
+    }
+
+    private void mostrarPromediosDesdeTabla() {
         DefaultTableModel modelo = (DefaultTableModel) tablaNotas.getModel();
-        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(modelo);
-        tablaNotas.setRowSorter(sorter);
 
-        if (!asignaturaSeleccionada.equals("Todas")) {
-            sorter.setRowFilter(RowFilter.regexFilter(asignaturaSeleccionada, 0)); 
+        if (modelo.getRowCount() > 0) {
+            // Map para almacenar las notas agrupadas por asignatura
+            Map<String, List<Double>> asignaturaNotas = new HashMap<>();
+
+            // Recorrer las filas de la tabla y agrupar notas por asignatura
+            for (int i = 0; i < modelo.getRowCount(); i++) {
+                String asignatura = (String) modelo.getValueAt(i, 0); // Columna "Asignatura"
+                double nota = Double.parseDouble(modelo.getValueAt(i, 1).toString()); // Columna "Nota"
+
+                asignaturaNotas.putIfAbsent(asignatura, new ArrayList<>());
+                asignaturaNotas.get(asignatura).add(nota);
+            }
+
+            // Construir el texto para los promedios
+            StringBuilder textoPromedios = new StringBuilder("Promedios por asignatura:\n");
+            double sumaGeneral = 0;
+            int totalNotas = 0;
+
+            for (Map.Entry<String, List<Double>> entry : asignaturaNotas.entrySet()) {
+                String asignatura = entry.getKey();
+                List<Double> notas = entry.getValue();
+
+                // Calcular promedio por asignatura
+                double promedio = notas.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                textoPromedios.append("- ").append(asignatura).append(": ").append(String.format("%.2f", promedio)).append("\n");
+
+                // Sumar para el promedio general
+                sumaGeneral += notas.stream().mapToDouble(Double::doubleValue).sum();
+                totalNotas += notas.size();
+            }
+
+            // Calcular promedio general
+            double promedioGeneral = totalNotas > 0 ? sumaGeneral / totalNotas : 0.0;
+            textoPromedios.append("\nPromedio general: ").append(String.format("%.2f", promedioGeneral));
+
+            // Mostrar en jTextArea1
+            jTextArea1.setText(textoPromedios.toString());
         } else {
-            sorter.setRowFilter(null); 
+            jTextArea1.setText("No hay notas disponibles para calcular los promedios.");
         }
     }
-}
-
-private void cargarAsignaturas() {
-    if (alumno != null) {
-        AlumnoController alumnoController = new AlumnoController();
-        int idGrupo = new AlumnoController().obtenerIdGrupoPorAlumno(alumno.getId());
-        List<String> asignaturas = alumnoController.obtenerAsignaturasPorGrupo(idGrupo);
-
-        if (!asignaturas.isEmpty()) {
-            asignaturas.forEach(asignatura -> jComboBox1.addItem(asignatura));
-        } else {
-            System.out.println("No se encontraron asignaturas para el grupo.");
-        }
-    }
-}
-private void mostrarPromediosDesdeTabla() {
-    DefaultTableModel modelo = (DefaultTableModel) tablaNotas.getModel();
-
-    if (modelo.getRowCount() > 0) {
-        // Map para almacenar las notas agrupadas por asignatura
-        Map<String, List<Double>> asignaturaNotas = new HashMap<>();
-
-        // Recorrer las filas de la tabla y agrupar notas por asignatura
-        for (int i = 0; i < modelo.getRowCount(); i++) {
-            String asignatura = (String) modelo.getValueAt(i, 0); // Columna "Asignatura"
-            double nota = Double.parseDouble(modelo.getValueAt(i, 1).toString()); // Columna "Nota"
-
-            asignaturaNotas.putIfAbsent(asignatura, new ArrayList<>());
-            asignaturaNotas.get(asignatura).add(nota);
-        }
-
-        // Construir el texto para los promedios
-        StringBuilder textoPromedios = new StringBuilder("Promedios por asignatura:\n");
-        double sumaGeneral = 0;
-        int totalNotas = 0;
-
-        for (Map.Entry<String, List<Double>> entry : asignaturaNotas.entrySet()) {
-            String asignatura = entry.getKey();
-            List<Double> notas = entry.getValue();
-
-            // Calcular promedio por asignatura
-            double promedio = notas.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-            textoPromedios.append("- ").append(asignatura).append(": ").append(String.format("%.2f", promedio)).append("\n");
-
-            // Sumar para el promedio general
-            sumaGeneral += notas.stream().mapToDouble(Double::doubleValue).sum();
-            totalNotas += notas.size();
-        }
-
-        // Calcular promedio general
-        double promedioGeneral = totalNotas > 0 ? sumaGeneral / totalNotas : 0.0;
-        textoPromedios.append("\nPromedio general: ").append(String.format("%.2f", promedioGeneral));
-
-        // Mostrar en jTextArea1
-        jTextArea1.setText(textoPromedios.toString());
-    } else {
-        jTextArea1.setText("No hay notas disponibles para calcular los promedios.");
-    }
-}
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -259,6 +282,10 @@ private void mostrarPromediosDesdeTabla() {
         jPanel9 = new javax.swing.JPanel();
         lblBienvenida = new javax.swing.JLabel();
         closeSession = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        lblBienvenida2 = new javax.swing.JLabel();
+        lblBienvenida1 = new javax.swing.JLabel();
+        lblAsignaturas = new javax.swing.JLabel();
         mainPanel3 = new javax.swing.JPanel();
         jTabbedPane4 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
@@ -284,6 +311,7 @@ private void mostrarPromediosDesdeTabla() {
         jLabel14 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         DescargarNotas = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
@@ -299,8 +327,8 @@ private void mostrarPromediosDesdeTabla() {
         setBounds(new java.awt.Rectangle(0, 0, 810, 600));
         setFont(new java.awt.Font("Trebuchet MS", 1, 12)); // NOI18N
         setForeground(new java.awt.Color(204, 204, 204));
-        setMaximumSize(new java.awt.Dimension(800, 600));
-        setMinimumSize(new java.awt.Dimension(800, 600));
+        setMaximumSize(new java.awt.Dimension(1000, 600));
+        setMinimumSize(new java.awt.Dimension(1000, 600));
         setUndecorated(true);
         setResizable(false);
         setSize(new java.awt.Dimension(800, 500));
@@ -310,16 +338,16 @@ private void mostrarPromediosDesdeTabla() {
         jPanel8.setPreferredSize(new java.awt.Dimension(800, 500));
         jPanel8.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jPanel9.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel9.setBackground(new java.awt.Color(0, 0, 102));
         jPanel9.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         lblBienvenida.setBackground(new java.awt.Color(255, 255, 255));
         lblBienvenida.setFont(new java.awt.Font("Poppins Medium", 3, 14)); // NOI18N
-        lblBienvenida.setForeground(new java.awt.Color(0, 51, 204));
+        lblBienvenida.setForeground(new java.awt.Color(255, 255, 255));
         lblBienvenida.setText("jLabel2");
-        jPanel9.add(lblBienvenida, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 310, -1));
+        jPanel9.add(lblBienvenida, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 260, 130, -1));
 
-        closeSession.setBackground(new java.awt.Color(0, 0, 204));
+        closeSession.setBackground(new java.awt.Color(153, 0, 0));
         closeSession.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
         closeSession.setForeground(new java.awt.Color(255, 255, 255));
         closeSession.setText("Cerrar Sesión");
@@ -330,9 +358,30 @@ private void mostrarPromediosDesdeTabla() {
                 closeSessionActionPerformed(evt);
             }
         });
-        jPanel9.add(closeSession, new org.netbeans.lib.awtextra.AbsoluteConstraints(657, 0, 120, 30));
+        jPanel9.add(closeSession, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 510, 150, 30));
 
-        jPanel8.add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 780, 30));
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/user_alumno.png"))); // NOI18N
+        jPanel9.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 50, -1, -1));
+
+        lblBienvenida2.setBackground(new java.awt.Color(255, 255, 255));
+        lblBienvenida2.setFont(new java.awt.Font("Poppins Medium", 3, 16)); // NOI18N
+        lblBienvenida2.setForeground(new java.awt.Color(255, 255, 255));
+        lblBienvenida2.setText(" Portal del Estudiante");
+        jPanel9.add(lblBienvenida2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, 190, -1));
+
+        lblBienvenida1.setBackground(new java.awt.Color(255, 255, 255));
+        lblBienvenida1.setFont(new java.awt.Font("Poppins Medium", 3, 14)); // NOI18N
+        lblBienvenida1.setForeground(new java.awt.Color(255, 255, 255));
+        lblBienvenida1.setText("jLabel2");
+        jPanel9.add(lblBienvenida1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 310, 130, -1));
+
+        lblAsignaturas.setBackground(new java.awt.Color(255, 255, 255));
+        lblAsignaturas.setFont(new java.awt.Font("Poppins Medium", 3, 14)); // NOI18N
+        lblAsignaturas.setForeground(new java.awt.Color(255, 255, 255));
+        lblAsignaturas.setText("jLabel2");
+        jPanel9.add(lblAsignaturas, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 370, 130, -1));
+
+        jPanel8.add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 190, 600));
 
         mainPanel3.setBackground(new java.awt.Color(255, 255, 255));
         mainPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -391,7 +440,7 @@ private void mostrarPromediosDesdeTabla() {
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel4))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 49, Short.MAX_VALUE)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel8))))
@@ -412,13 +461,13 @@ private void mostrarPromediosDesdeTabla() {
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane9)
-                    .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE))
-                .addContainerGap(44, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
+                    .addComponent(jScrollPane8))
+                .addContainerGap())
         );
 
-        jTabbedPane4.addTab("Ver Notificaciones", jPanel1);
+        jTabbedPane4.addTab("Mis Notificaciones", jPanel1);
 
         jPanel6.setBackground(new java.awt.Color(255, 255, 255));
         jPanel6.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -431,7 +480,7 @@ private void mostrarPromediosDesdeTabla() {
         jComboBox1.setBorder(null);
         jScrollPane1.setViewportView(jComboBox1);
 
-        jPanel6.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 270, 50));
+        jPanel6.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 70, 250, 50));
 
         jLabel9.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel9.setText("Notas");
@@ -439,7 +488,7 @@ private void mostrarPromediosDesdeTabla() {
 
         jLabel10.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel10.setText("Asignaturas");
-        jPanel6.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 40, -1, 20));
+        jPanel6.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 40, -1, 20));
 
         jScrollPane10.setBorder(null);
         jScrollPane10.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
@@ -476,12 +525,13 @@ private void mostrarPromediosDesdeTabla() {
 
         jLabel11.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel11.setText("Promedios");
-        jPanel6.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 230, 110, 20));
+        jPanel6.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 160, 110, 20));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
         jPanel6.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 420, -1, -1));
 
         jScrollPane11.setBorder(null);
+        jScrollPane11.setFont(new java.awt.Font("Poppins", 0, 14)); // NOI18N
 
         jTextArea1.setColumns(20);
         jTextArea1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
@@ -489,11 +539,11 @@ private void mostrarPromediosDesdeTabla() {
         jTextArea1.setBorder(null);
         jScrollPane11.setViewportView(jTextArea1);
 
-        jPanel6.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 270, 270, 210));
+        jPanel6.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 200, 240, 280));
         jPanel6.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 98, 255, 20));
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
-        jPanel6.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(-20, 200, -1, -1));
+        jPanel6.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 130, -1, -1));
 
         DescargarNotas.setBackground(new java.awt.Color(0, 153, 102));
         DescargarNotas.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
@@ -507,9 +557,22 @@ private void mostrarPromediosDesdeTabla() {
                 DescargarNotasActionPerformed(evt);
             }
         });
-        jPanel6.add(DescargarNotas, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 149, 270, 30));
+        jPanel6.add(DescargarNotas, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 500, 460, 30));
 
-        jTabbedPane4.addTab("Ver Asignaturas", jPanel6);
+        jTabbedPane4.addTab("Mis Asignaturas", jPanel6);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 810, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 565, Short.MAX_VALUE)
+        );
+
+        jTabbedPane4.addTab("Mis Compañeros", jPanel3);
 
         jPanel7.setBackground(new java.awt.Color(255, 255, 255));
         jPanel7.setDoubleBuffered(false);
@@ -553,19 +616,19 @@ private void mostrarPromediosDesdeTabla() {
 
         jTabbedPane1.addTab("Cambio de Contraseña", jPanel2);
 
-        jPanel7.add(jTabbedPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 780, 520));
+        jPanel7.add(jTabbedPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 780, 570));
 
         jTabbedPane4.addTab("Configuración", jPanel7);
 
-        mainPanel3.add(jTabbedPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 3, 780, 560));
+        mainPanel3.add(jTabbedPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 3, 810, 600));
 
-        jPanel8.add(mainPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 36, 780, 540));
+        jPanel8.add(mainPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, -4, 810, 600));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, 1000, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -577,99 +640,98 @@ private void mostrarPromediosDesdeTabla() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void closeSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeSessionActionPerformed
-           int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            "¿Estás seguro de que quieres cerrar sesión?",
-            "Confirmar cierre de sesión",
-            javax.swing.JOptionPane.YES_NO_OPTION
-    );
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(
+                this,
+                "¿Estás seguro de que quieres cerrar sesión?",
+                "Confirmar cierre de sesión",
+                javax.swing.JOptionPane.YES_NO_OPTION
+        );
 
-    if (confirm == javax.swing.JOptionPane.YES_OPTION) {
-        System.out.println("Cerrando sesión...");
-        // Cerrar la aplicación
-        System.exit(0);
-    } else {
-        System.out.println("El usuario canceló el cierre de sesión.");
-    }
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            System.out.println("Cerrando sesión...");
+            // Cerrar la aplicación
+            System.exit(0);
+        } else {
+            System.out.println("El usuario canceló el cierre de sesión.");
+        }
     }//GEN-LAST:event_closeSessionActionPerformed
 
     private void CambioContraseñalogin(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CambioContraseñalogin
 
-            String contrasenaActual = new String(txtContrasena.getPassword());
-    String nuevaContrasena = new String(txtContrasena2.getPassword()); // Asegúrate de renombrar el campo para evitar confusión
+        String contrasenaActual = new String(txtContrasena.getPassword());
+        String nuevaContrasena = new String(txtContrasena2.getPassword()); // Asegúrate de renombrar el campo para evitar confusión
 
-    if (contrasenaActual.isEmpty() || nuevaContrasena.isEmpty()) {
-        javax.swing.JOptionPane.showMessageDialog(this, "Por favor, llena ambos campos.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-
-    // Validar que la contraseña actual sea correcta
-    UsuarioController usuarioController = new UsuarioController();
-    Usuario usuarioValidado = usuarioController.login(usuario.getNombreUsuario(), contrasenaActual);
-
-    if (usuarioValidado != null) {
-        // Cambiar la contraseña
-        boolean cambioExitoso = usuarioController.cambiarContrasena(usuario.getId(), nuevaContrasena);
-        if (cambioExitoso) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Contraseña actualizada con éxito.", "Éxito", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            javax.swing.JOptionPane.showMessageDialog(this, "Hubo un problema al cambiar la contraseña.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        if (contrasenaActual.isEmpty() || nuevaContrasena.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Por favor, llena ambos campos.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            return;
         }
-    } else {
-        javax.swing.JOptionPane.showMessageDialog(this, "La contraseña actual no es correcta.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-    }
+
+        // Validar que la contraseña actual sea correcta
+        UsuarioController usuarioController = new UsuarioController();
+        Usuario usuarioValidado = usuarioController.login(usuario.getNombreUsuario(), contrasenaActual);
+
+        if (usuarioValidado != null) {
+            // Cambiar la contraseña
+            boolean cambioExitoso = usuarioController.cambiarContrasena(usuario.getId(), nuevaContrasena);
+            if (cambioExitoso) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Contraseña actualizada con éxito.", "Éxito", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Hubo un problema al cambiar la contraseña.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(this, "La contraseña actual no es correcta.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_CambioContraseñalogin
 
     private void DescargarNotasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DescargarNotasActionPerformed
-         if (alumno != null) {
-        try {
-            // Obtener todas las notas desde la tabla
-            DefaultTableModel modelo = (DefaultTableModel) tablaNotas.getModel();
-            List<String[]> notas = new ArrayList<>();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        if (alumno != null) {
+            try {
+                // Obtener todas las notas desde la tabla
+                DefaultTableModel modelo = (DefaultTableModel) tablaNotas.getModel();
+                List<String[]> notas = new ArrayList<>();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-            for (int i = 0; i < modelo.getRowCount(); i++) {
-                String asignatura = (String) modelo.getValueAt(i, 0); // Columna Asignatura
-                String nota = modelo.getValueAt(i, 1).toString();    // Columna Nota
+                for (int i = 0; i < modelo.getRowCount(); i++) {
+                    String asignatura = (String) modelo.getValueAt(i, 0); // Columna Asignatura
+                    String nota = modelo.getValueAt(i, 1).toString();    // Columna Nota
 
-                // Obtener y convertir la fecha
-                Object fechaObj = modelo.getValueAt(i, 2); // Columna Fecha
-                String fechaFormateada;
-                if (fechaObj instanceof Date) {
-                    fechaFormateada = dateFormat.format((Date) fechaObj);
-                } else if (fechaObj instanceof String) {
-                    fechaFormateada = (String) fechaObj; // Suponemos que ya está formateada como String
-                } else {
-                    throw new IllegalArgumentException("Formato de fecha desconocido en la tabla.");
+                    // Obtener y convertir la fecha
+                    Object fechaObj = modelo.getValueAt(i, 2); // Columna Fecha
+                    String fechaFormateada;
+                    if (fechaObj instanceof Date) {
+                        fechaFormateada = dateFormat.format((Date) fechaObj);
+                    } else if (fechaObj instanceof String) {
+                        fechaFormateada = (String) fechaObj; // Suponemos que ya está formateada como String
+                    } else {
+                        throw new IllegalArgumentException("Formato de fecha desconocido en la tabla.");
+                    }
+
+                    notas.add(new String[]{asignatura, nota, fechaFormateada});
                 }
 
-                notas.add(new String[]{asignatura, nota, fechaFormateada});
+                // Generar el PDF
+                PDFGenerator.generarPDFNotasAlumno(alumno.getNombre() + " " + alumno.getApellido(), notas);
+                javax.swing.JOptionPane.showMessageDialog(this, "El PDF de las notas se ha descargado en la carpeta de Descargas.");
+            } catch (Exception e) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Error al generar el PDF: " + e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
             }
-
-            // Generar el PDF
-            PDFGenerator.generarPDFNotasAlumno(alumno.getNombre() + " " + alumno.getApellido(), notas);
-            javax.swing.JOptionPane.showMessageDialog(this, "El PDF de las notas se ha descargado en la carpeta de Descargas.");
-        } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Error al generar el PDF: " + e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(this, "No se encontraron notas para descargar.");
         }
-    } else {
-        javax.swing.JOptionPane.showMessageDialog(this, "No se encontraron notas para descargar.");
-    }
     }//GEN-LAST:event_DescargarNotasActionPerformed
 
-    
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
-         
-        /* Create and display the form */
+
+ /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 Usuario usuarioPrueba = new Usuario(1, "juanperez", "12345", "Alumno", 1, null, null);
-        new AlumnoView(usuarioPrueba).setVisible(true);
-                
+                new AlumnoView(usuarioPrueba).setVisible(true);
+
             }
         });
     }
@@ -684,6 +746,7 @@ private void mostrarPromediosDesdeTabla() {
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -692,6 +755,7 @@ private void mostrarPromediosDesdeTabla() {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
@@ -705,7 +769,10 @@ private void mostrarPromediosDesdeTabla() {
     private javax.swing.JTabbedPane jTabbedPane4;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JLabel lblAsignaturas;
     private javax.swing.JLabel lblBienvenida;
+    private javax.swing.JLabel lblBienvenida1;
+    private javax.swing.JLabel lblBienvenida2;
     private javax.swing.JList<String> listaNotificacionesGrupales;
     private javax.swing.JList<String> listaNotificacionesPersonal3;
     private javax.swing.JPanel mainPanel3;
