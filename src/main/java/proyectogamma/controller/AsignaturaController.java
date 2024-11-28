@@ -41,6 +41,31 @@ public class AsignaturaController {
 
         return asignaturas;
     }
+    public List<Asignatura> obtenerAsignaturasPorDocente(int idDocente) {
+    List<Asignatura> asignaturas = new ArrayList<>();
+    String sql = "SELECT id, nombre FROM asignatura WHERE id_profesor = ?";
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idDocente);
+        ResultSet rs = pstmt.executeQuery();
+
+        while (rs.next()) {
+            Asignatura asignatura = new Asignatura(
+                    rs.getInt("id"),
+                    rs.getString("nombre"),
+                    idDocente
+            );
+            asignaturas.add(asignatura);
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener asignaturas del docente: " + e.getMessage());
+    }
+
+    return asignaturas;
+}
 
     // Método para obtener una asignatura por ID
     public Asignatura obtenerAsignaturaPorId(int id) {

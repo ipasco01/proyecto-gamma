@@ -9,11 +9,15 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import proyectogamma.controller.AlumnoController;
+import proyectogamma.controller.AsignaturaController;
+import proyectogamma.controller.EvaluacionController;
 import proyectogamma.controller.GrupoController;
 import proyectogamma.controller.NotificacionController;
 import proyectogamma.controller.UsuarioController;
 import proyectogamma.model.Alumno;
+import proyectogamma.model.Asignatura;
 import proyectogamma.model.Docente;
+import proyectogamma.model.Evaluacion;
 import proyectogamma.model.Grupos;
 import proyectogamma.model.Notificacion;
 import proyectogamma.model.Usuario;
@@ -55,6 +59,7 @@ public class DocenteView extends javax.swing.JFrame {
     jTabbedPane1.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());
     cargarGruposYAlumnos();
     cargarNotificaciones();
+    cargarAsignaturasYGrupos();
     jTabbedPane3.setUI(new com.formdev.flatlaf.ui.FlatTabbedPaneUI());
 
     
@@ -80,8 +85,34 @@ public class DocenteView extends javax.swing.JFrame {
         }
     }
 });
+tablaAsignaturas.addMouseListener(new java.awt.event.MouseAdapter() {
+    @Override
+    public void mouseClicked(java.awt.event.MouseEvent evt) {
+        int selectedRow = tablaAsignaturas.getSelectedRow();
+        if (selectedRow != -1) {
+            int idAsignatura = Integer.parseInt(tablaAsignaturas.getValueAt(selectedRow, 0).toString());
+            cargarEvaluacionesPorAsignatura(idAsignatura);
+        }
+    }
+});
 
     }
+    private void cargarAsignaturasYGrupos() {
+    AsignaturaController asignaturaController = new AsignaturaController();
+    List<Asignatura> asignaturas = asignaturaController.obtenerAsignaturasPorDocente(docente.getId());
+
+    DefaultTableModel model = new DefaultTableModel(new String[]{"ID Asignatura", "Asignatura"}, 0);
+
+    for (Asignatura asignatura : asignaturas) {
+        model.addRow(new Object[]{
+            asignatura.getId(),
+            asignatura.getNombre(),
+        });
+    }
+
+    tablaAsignaturas.setModel(model);
+}
+
     private void cargarGruposYAlumnos() {
     // Limpiar los comboBox antes de cargarlos para evitar duplicados
     comboBoxGrupo.removeAllItems();
@@ -168,6 +199,24 @@ public class DocenteView extends javax.swing.JFrame {
 
     jTable1.setModel(model);
 }
+private void cargarEvaluacionesPorAsignatura(int idAsignatura) {
+    EvaluacionController evaluacionController = new EvaluacionController();
+    List<Evaluacion> evaluaciones = evaluacionController.obtenerEvaluacionesPorAsignatura(idAsignatura);
+
+    DefaultTableModel model = new DefaultTableModel(new String[]{"ID", "Nombre", "Peso", "Fecha"}, 0);
+
+    for (Evaluacion evaluacion : evaluaciones) {
+        model.addRow(new Object[]{
+            evaluacion.getId(),
+            evaluacion.getNombre(),
+            evaluacion.getPeso(),
+            evaluacion.getFecha()
+        });
+    }
+
+    tablaEvaluaciones.setModel(model);
+}
+
 
 private void limpiarCamposNotificacion() {
     txtTitulo1.setText("");
@@ -229,10 +278,28 @@ private void limpiarCamposNotificacion() {
         jLabel12 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jTabbedPane3 = new javax.swing.JTabbedPane();
-        jPanel5 = new javax.swing.JPanel();
+        PanelAsignaturas = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
+        tablaAsignaturas = new javax.swing.JTable();
         jSeparator1 = new javax.swing.JSeparator();
+        jLabel14 = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        tablaEvaluaciones = new javax.swing.JTable();
+        agregarEvaluacion = new javax.swing.JButton();
+        agregarEval = new javax.swing.JPanel();
+        jLabel18 = new javax.swing.JLabel();
+        txtTituloEval = new javax.swing.JTextField();
+        addEval = new javax.swing.JButton();
+        jLabel20 = new javax.swing.JLabel();
+        jLabel21 = new javax.swing.JLabel();
+        txtTituloEval2 = new javax.swing.JTextField();
+        jLabel22 = new javax.swing.JLabel();
+        txtTituloEval3 = new javax.swing.JTextField();
+        jPanel14 = new javax.swing.JPanel();
+        jLabel19 = new javax.swing.JLabel();
+        txtTituloEval1 = new javax.swing.JTextField();
+        addNotif3 = new javax.swing.JButton();
+        addNotif4 = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
@@ -653,12 +720,13 @@ private void limpiarCamposNotificacion() {
         jTabbedPane3.setTabPlacement(javax.swing.JTabbedPane.LEFT);
         jTabbedPane3.setFont(new java.awt.Font("Poppins SemiBold", 0, 12)); // NOI18N
 
-        jPanel5.setBackground(new java.awt.Color(255, 255, 255));
+        PanelAsignaturas.setBackground(new java.awt.Color(255, 255, 255));
 
         jScrollPane1.setColumnHeaderView(null);
         jScrollPane1.setFont(new java.awt.Font("Poppins SemiBold", 0, 12)); // NOI18N
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+        tablaAsignaturas.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        tablaAsignaturas.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -669,30 +737,212 @@ private void limpiarCamposNotificacion() {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(jTable2);
+        jScrollPane1.setViewportView(tablaAsignaturas);
 
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
+        jLabel14.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel14.setText("Evaluaciones");
+
+        tablaEvaluaciones.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        tablaEvaluaciones.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane4.setViewportView(tablaEvaluaciones);
+
+        agregarEvaluacion.setBackground(new java.awt.Color(0, 0, 204));
+        agregarEvaluacion.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        agregarEvaluacion.setForeground(new java.awt.Color(255, 255, 255));
+        agregarEvaluacion.setText("Agregar o Modificar Evaluación");
+        agregarEvaluacion.setActionCommand("Agregar o Modificar Evaluación");
+        agregarEvaluacion.setBorder(null);
+        agregarEvaluacion.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        agregarEvaluacion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                agregarEvaluacionActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout PanelAsignaturasLayout = new javax.swing.GroupLayout(PanelAsignaturas);
+        PanelAsignaturas.setLayout(PanelAsignaturasLayout);
+        PanelAsignaturasLayout.setHorizontalGroup(
+            PanelAsignaturasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PanelAsignaturasLayout.createSequentialGroup()
                 .addGap(17, 17, 17)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
-                    .addComponent(jSeparator1))
+                .addGroup(PanelAsignaturasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                    .addComponent(jSeparator1)
+                    .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane4)
+                    .addComponent(agregarEvaluacion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
+        PanelAsignaturasLayout.setVerticalGroup(
+            PanelAsignaturasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PanelAsignaturasLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(388, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel14)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(agregarEvaluacion, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(21, Short.MAX_VALUE))
         );
 
-        jTabbedPane3.addTab("Ver todas mis asignaturas", jPanel5);
+        jTabbedPane3.addTab("Ver todas mis asignaturas", PanelAsignaturas);
+
+        agregarEval.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel18.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel18.setText("Titulo de la Evaluación");
+
+        txtTituloEval.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        addEval.setBackground(new java.awt.Color(0, 0, 204));
+        addEval.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        addEval.setForeground(new java.awt.Color(255, 255, 255));
+        addEval.setText("Agregar Notificación");
+        addEval.setBorder(null);
+        addEval.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        addEval.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addEvalActionPerformed(evt);
+            }
+        });
+
+        jLabel20.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
+        jLabel20.setForeground(new java.awt.Color(0, 0, 204));
+        jLabel20.setText("Agregar Evaluación");
+
+        jLabel21.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel21.setText("Peso");
+
+        txtTituloEval2.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        jLabel22.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel22.setText("Asignatura");
+
+        txtTituloEval3.setEditable(false);
+        txtTituloEval3.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        javax.swing.GroupLayout agregarEvalLayout = new javax.swing.GroupLayout(agregarEval);
+        agregarEval.setLayout(agregarEvalLayout);
+        agregarEvalLayout.setHorizontalGroup(
+            agregarEvalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, agregarEvalLayout.createSequentialGroup()
+                .addContainerGap(166, Short.MAX_VALUE)
+                .addGroup(agregarEvalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(agregarEvalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel22, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtTituloEval3, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel20, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(agregarEvalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(addEval, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel18, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtTituloEval2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                        .addComponent(jLabel21, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                        .addComponent(txtTituloEval, javax.swing.GroupLayout.Alignment.LEADING)))
+                .addGap(180, 180, 180))
+        );
+        agregarEvalLayout.setVerticalGroup(
+            agregarEvalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(agregarEvalLayout.createSequentialGroup()
+                .addGap(62, 62, 62)
+                .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel22)
+                .addGap(18, 18, 18)
+                .addComponent(txtTituloEval3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel18)
+                .addGap(18, 18, 18)
+                .addComponent(txtTituloEval2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel21)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtTituloEval, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(60, 60, 60)
+                .addComponent(addEval, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(100, Short.MAX_VALUE))
+        );
+
+        agregarEvalLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jLabel18, jLabel21, txtTituloEval, txtTituloEval2});
+
+        jTabbedPane3.addTab("Agregar Evaluaciones", agregarEval);
+
+        jPanel14.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel19.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel19.setText("Titulo de la Evaluación");
+
+        txtTituloEval1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        addNotif3.setBackground(new java.awt.Color(0, 0, 204));
+        addNotif3.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        addNotif3.setForeground(new java.awt.Color(255, 255, 255));
+        addNotif3.setText("Agregar Notificación");
+        addNotif3.setBorder(null);
+        addNotif3.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        addNotif3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addNotif3ActionPerformed(evt);
+            }
+        });
+
+        addNotif4.setBackground(new java.awt.Color(0, 0, 204));
+        addNotif4.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        addNotif4.setForeground(new java.awt.Color(255, 255, 255));
+        addNotif4.setText("Agregar Notificación");
+        addNotif4.setBorder(null);
+        addNotif4.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        addNotif4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addNotif4ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
+        jPanel14.setLayout(jPanel14Layout);
+        jPanel14Layout.setHorizontalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(addNotif4, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(addNotif3, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12))
+            .addGroup(jPanel14Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtTituloEval1, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel14Layout.setVerticalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel14Layout.createSequentialGroup()
+                .addGap(79, 79, 79)
+                .addComponent(jLabel19)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtTituloEval1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 178, Short.MAX_VALUE)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(addNotif3, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addNotif4, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(170, 170, 170))
+        );
+
+        jTabbedPane3.addTab("Modificar o Eliminar Evaluación", jPanel14);
 
         jPanel6.add(jTabbedPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 780, 510));
 
@@ -930,6 +1180,22 @@ if (!"Sin alumno".equals(nuevoAlumno1)) {
     }
     }//GEN-LAST:event_addNotifActionPerformed
 
+    private void agregarEvaluacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarEvaluacionActionPerformed
+       jTabbedPane3.setSelectedComponent(PanelAsignaturas);
+    }//GEN-LAST:event_agregarEvaluacionActionPerformed
+
+    private void addNotif3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNotif3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_addNotif3ActionPerformed
+
+    private void addNotif4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNotif4ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_addNotif4ActionPerformed
+
+    private void addEvalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEvalActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_addEvalActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -967,7 +1233,13 @@ if (!"Sin alumno".equals(nuevoAlumno1)) {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton CambioContraseña;
+    private javax.swing.JPanel PanelAsignaturas;
+    private javax.swing.JButton addEval;
     private javax.swing.JButton addNotif;
+    private javax.swing.JButton addNotif3;
+    private javax.swing.JButton addNotif4;
+    private javax.swing.JPanel agregarEval;
+    private javax.swing.JButton agregarEvaluacion;
     private javax.swing.JButton closeSession1;
     private javax.swing.JComboBox<String> comboBoxAlumno;
     private javax.swing.JComboBox<String> comboBoxAlumno1;
@@ -978,9 +1250,15 @@ if (!"Sin alumno".equals(nuevoAlumno1)) {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -990,10 +1268,10 @@ if (!"Sin alumno".equals(nuevoAlumno1)) {
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
@@ -1002,6 +1280,7 @@ if (!"Sin alumno".equals(nuevoAlumno1)) {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;
@@ -1010,7 +1289,6 @@ if (!"Sin alumno".equals(nuevoAlumno1)) {
     private javax.swing.JTabbedPane jTabbedPane3;
     private javax.swing.JTabbedPane jTabbedPane4;
     private javax.swing.JTable jTable1;
-    private javax.swing.JTable jTable2;
     private javax.swing.JTextArea jTextArea2;
     private javax.swing.JLabel lblBienvenida;
     private javax.swing.JLabel lblBienvenida1;
@@ -1018,11 +1296,17 @@ if (!"Sin alumno".equals(nuevoAlumno1)) {
     private javax.swing.JPanel mainPanel3;
     private javax.swing.JButton modNotif;
     private javax.swing.JButton modifNotificacion;
+    private javax.swing.JTable tablaAsignaturas;
+    private javax.swing.JTable tablaEvaluaciones;
     private javax.swing.JPasswordField txtContrasena;
     private javax.swing.JPasswordField txtContrasena2;
     private javax.swing.JTextArea txtMensaje;
     private javax.swing.JTextArea txtMensaje1;
     private javax.swing.JTextField txtTitulo;
     private javax.swing.JTextField txtTitulo1;
+    private javax.swing.JTextField txtTituloEval;
+    private javax.swing.JTextField txtTituloEval1;
+    private javax.swing.JTextField txtTituloEval2;
+    private javax.swing.JTextField txtTituloEval3;
     // End of variables declaration//GEN-END:variables
 }
