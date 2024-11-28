@@ -11,6 +11,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import proyectogamma.model.Usuario;
+
 public class AlumnoController {
 
     // Método para obtener todos los alumnos
@@ -18,9 +19,7 @@ public class AlumnoController {
         List<Alumno> alumnos = new ArrayList<>();
         String sql = "SELECT * FROM alumno";
 
-        try (Connection conn = BaseDatos.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 Alumno alumno = new Alumno(
@@ -42,249 +41,249 @@ public class AlumnoController {
     }
 
     public Alumno obtenerAlumnoPorId(int id) {
-    String sql = "SELECT * FROM alumno WHERE id = ?";
-    Alumno alumno = null;
+        String sql = "SELECT * FROM alumno WHERE id = ?";
+        Alumno alumno = null;
 
-    try (Connection conn = BaseDatos.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        System.out.println("Conexión establecida: " + !conn.isClosed()); // Verificar si la conexión está activa
-        pstmt.setInt(1, id);
+            System.out.println("Conexión establecida: " + !conn.isClosed()); // Verificar si la conexión está activa
+            pstmt.setInt(1, id);
 
-        try (ResultSet rs = pstmt.executeQuery()) {
-            if (rs.next()) {
-                alumno = new Alumno(
-                        rs.getInt("id"),
-                        rs.getString("nombre"),
-                        rs.getString("apellido"),
-                        rs.getString("email"),
-                        rs.getDate("fecha_nacimiento"),
-                        rs.getTimestamp("fecha_registro")
-                );
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    alumno = new Alumno(
+                            rs.getInt("id"),
+                            rs.getString("nombre"),
+                            rs.getString("apellido"),
+                            rs.getString("email"),
+                            rs.getDate("fecha_nacimiento"),
+                            rs.getTimestamp("fecha_registro")
+                    );
+                }
             }
-        }
-    } catch (SQLException e) {
-        System.out.println("Error al obtener alumno por ID: " + e.getMessage());
-    }
-
-    if (alumno == null) {
-        System.out.println("No se encontró un alumno con ID: " + id);
-    }
-
-    return alumno;
-}
-   public Integer obtenerIdAlumnoPorNombre(String nombreCompleto) {
-    String sql = "SELECT id FROM alumno WHERE CONCAT(nombre, ' ', apellido) = ?";
-    Integer idAlumno = null;
-
-    try (Connection conn = BaseDatos.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-        pstmt.setString(1, nombreCompleto);
-        ResultSet rs = pstmt.executeQuery();
-
-        if (rs.next()) {
-            idAlumno = rs.getInt("id");
+        } catch (SQLException e) {
+            System.out.println("Error al obtener alumno por ID: " + e.getMessage());
         }
 
-    } catch (SQLException e) {
-        System.out.println("Error al obtener ID del alumno por nombre completo: " + e.getMessage());
+        if (alumno == null) {
+            System.out.println("No se encontró un alumno con ID: " + id);
+        }
+
+        return alumno;
     }
 
-    return idAlumno;
-}
+    public Integer obtenerIdAlumnoPorNombre(String nombreCompleto) {
+        String sql = "SELECT id FROM alumno WHERE CONCAT(nombre, ' ', apellido) = ?";
+        Integer idAlumno = null;
 
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, nombreCompleto);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                idAlumno = rs.getInt("id");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener ID del alumno por nombre completo: " + e.getMessage());
+        }
+
+        return idAlumno;
+    }
 
     public boolean agregarAlumno(Alumno alumno, String nombreUsuario, String contrasena, int idGrupo) {
-    String sqlAlumno = "INSERT INTO alumno (nombre, apellido, email, fecha_nacimiento, fecha_registro) " +
-                       "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
-    String sqlAsignarGrupo = "INSERT INTO alumno_grupos (id_alumno, id_grupo) VALUES (?, ?)";
+        String sqlAlumno = "INSERT INTO alumno (nombre, apellido, email, fecha_nacimiento, fecha_registro) "
+                + "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        String sqlAsignarGrupo = "INSERT INTO alumno_grupos (id_alumno, id_grupo) VALUES (?, ?)";
 
-    Connection conn = null;
-    PreparedStatement pstmtAlumno = null;
-    PreparedStatement pstmtAsignarGrupo = null;
+        Connection conn = null;
+        PreparedStatement pstmtAlumno = null;
+        PreparedStatement pstmtAsignarGrupo = null;
 
-    try {
-        conn = BaseDatos.getConnection();
-        conn.setAutoCommit(false); // Iniciar transacción
-
-        // Insertar el alumno
-        pstmtAlumno = conn.prepareStatement(sqlAlumno, Statement.RETURN_GENERATED_KEYS);
-        pstmtAlumno.setString(1, alumno.getNombre());
-        pstmtAlumno.setString(2, alumno.getApellido());
-        pstmtAlumno.setString(3, alumno.getEmail());
-        pstmtAlumno.setDate(4, new java.sql.Date(alumno.getFechaNacimiento().getTime()));
-
-        int rowsInsertedAlumno = pstmtAlumno.executeUpdate();
-        if (rowsInsertedAlumno == 0) {
-            throw new SQLException("Fallo al insertar el alumno.");
-        }
-
-        // Obtener el ID del alumno recién insertado
-        ResultSet generatedKeys = pstmtAlumno.getGeneratedKeys();
-        if (!generatedKeys.next()) {
-            throw new SQLException("No se pudo obtener el ID del alumno.");
-        }
-        int idAlumno = generatedKeys.getInt(1);
-
-        // Crear el usuario asociado al alumno
-        UsuarioController usuarioController = new UsuarioController();
-        Usuario usuario = new Usuario(0, nombreUsuario, contrasena, "Alumno", idAlumno, null, null);
-
-        if (!usuarioController.agregarUsuario(usuario)) {
-            throw new SQLException("Fallo al insertar el usuario asociado al alumno.");
-        }
-
-        // Asignar al alumno al grupo
-        pstmtAsignarGrupo = conn.prepareStatement(sqlAsignarGrupo);
-        pstmtAsignarGrupo.setInt(1, idAlumno);
-        pstmtAsignarGrupo.setInt(2, idGrupo);
-
-        int rowsInsertedGrupo = pstmtAsignarGrupo.executeUpdate();
-        if (rowsInsertedGrupo == 0) {
-            throw new SQLException("Fallo al asignar el alumno al grupo.");
-        }
-
-        conn.commit(); // Confirmar la transacción
-        return true;
-
-    } catch (SQLException e) {
-        System.out.println("Error al agregar alumno, usuario y asignar a grupo: " + e.getMessage());
-        if (conn != null) {
-            try {
-                conn.rollback(); // Revertir la transacción en caso de error
-            } catch (SQLException rollbackEx) {
-                System.out.println("Error al hacer rollback: " + rollbackEx.getMessage());
-            }
-        }
-        return false;
-
-    } finally {
         try {
-            if (pstmtAlumno != null) pstmtAlumno.close();
-            if (pstmtAsignarGrupo != null) pstmtAsignarGrupo.close();
-            if (conn != null) conn.close();
-        } catch (SQLException closeEx) {
-            System.out.println("Error al cerrar recursos: " + closeEx.getMessage());
-        }
-    }
-}
-    public String obtenerNombreAlumnoPorId(int idAlumno) {
-    String sql = "SELECT nombre, apellido FROM alumno WHERE id = ?";
-    String nombreCompleto = null;
+            conn = BaseDatos.getConnection();
+            conn.setAutoCommit(false); // Iniciar transacción
 
-    try (Connection conn = BaseDatos.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            // Insertar el alumno
+            pstmtAlumno = conn.prepareStatement(sqlAlumno, Statement.RETURN_GENERATED_KEYS);
+            pstmtAlumno.setString(1, alumno.getNombre());
+            pstmtAlumno.setString(2, alumno.getApellido());
+            pstmtAlumno.setString(3, alumno.getEmail());
+            pstmtAlumno.setDate(4, new java.sql.Date(alumno.getFechaNacimiento().getTime()));
 
-        pstmt.setInt(1, idAlumno);
-        try (ResultSet rs = pstmt.executeQuery()) {
-            if (rs.next()) {
-                String nombre = rs.getString("nombre");
-                String apellido = rs.getString("apellido");
-                nombreCompleto = nombre + " " + apellido;
-            } else {
-                System.out.println("No se encontró un alumno con ID: " + idAlumno);
+            int rowsInsertedAlumno = pstmtAlumno.executeUpdate();
+            if (rowsInsertedAlumno == 0) {
+                throw new SQLException("Fallo al insertar el alumno.");
+            }
+
+            // Obtener el ID del alumno recién insertado
+            ResultSet generatedKeys = pstmtAlumno.getGeneratedKeys();
+            if (!generatedKeys.next()) {
+                throw new SQLException("No se pudo obtener el ID del alumno.");
+            }
+            int idAlumno = generatedKeys.getInt(1);
+
+            // Crear el usuario asociado al alumno
+            UsuarioController usuarioController = new UsuarioController();
+            Usuario usuario = new Usuario(0, nombreUsuario, contrasena, "Alumno", idAlumno, null, null);
+
+            if (!usuarioController.agregarUsuario(usuario)) {
+                throw new SQLException("Fallo al insertar el usuario asociado al alumno.");
+            }
+
+            // Asignar al alumno al grupo
+            pstmtAsignarGrupo = conn.prepareStatement(sqlAsignarGrupo);
+            pstmtAsignarGrupo.setInt(1, idAlumno);
+            pstmtAsignarGrupo.setInt(2, idGrupo);
+
+            int rowsInsertedGrupo = pstmtAsignarGrupo.executeUpdate();
+            if (rowsInsertedGrupo == 0) {
+                throw new SQLException("Fallo al asignar el alumno al grupo.");
+            }
+
+            conn.commit(); // Confirmar la transacción
+            return true;
+
+        } catch (SQLException e) {
+            System.out.println("Error al agregar alumno, usuario y asignar a grupo: " + e.getMessage());
+            if (conn != null) {
+                try {
+                    conn.rollback(); // Revertir la transacción en caso de error
+                } catch (SQLException rollbackEx) {
+                    System.out.println("Error al hacer rollback: " + rollbackEx.getMessage());
+                }
+            }
+            return false;
+
+        } finally {
+            try {
+                if (pstmtAlumno != null) {
+                    pstmtAlumno.close();
+                }
+                if (pstmtAsignarGrupo != null) {
+                    pstmtAsignarGrupo.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException closeEx) {
+                System.out.println("Error al cerrar recursos: " + closeEx.getMessage());
             }
         }
-
-    } catch (SQLException e) {
-        System.out.println("Error al obtener el nombre del alumno: " + e.getMessage());
     }
 
-    return nombreCompleto;
-}
+    public String obtenerNombreAlumnoPorId(int idAlumno) {
+        String sql = "SELECT nombre, apellido FROM alumno WHERE id = ?";
+        String nombreCompleto = null;
+
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idAlumno);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String nombre = rs.getString("nombre");
+                    String apellido = rs.getString("apellido");
+                    nombreCompleto = nombre + " " + apellido;
+                } else {
+                    System.out.println("No se encontró un alumno con ID: " + idAlumno);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener el nombre del alumno: " + e.getMessage());
+        }
+
+        return nombreCompleto;
+    }
 
     public List<String> obtenerAsignaturasPorGrupo(int idGrupo) {
-    List<String> asignaturas = new ArrayList<>();
-    String sql = """
+        List<String> asignaturas = new ArrayList<>();
+        String sql = """
         SELECT a.nombre
         FROM grupo_asignaturas ga
         JOIN asignatura a ON ga.id_asignatura = a.id
         WHERE ga.id_grupo = ?
     """;
 
-    try (Connection conn = BaseDatos.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        pstmt.setInt(1, idGrupo);
-        ResultSet rs = pstmt.executeQuery();
+            pstmt.setInt(1, idGrupo);
+            ResultSet rs = pstmt.executeQuery();
 
-        while (rs.next()) {
-            asignaturas.add(rs.getString("nombre"));
+            while (rs.next()) {
+                asignaturas.add(rs.getString("nombre"));
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener asignaturas por grupo: " + e.getMessage());
         }
 
-    } catch (SQLException e) {
-        System.out.println("Error al obtener asignaturas por grupo: " + e.getMessage());
+        return asignaturas;
     }
 
-    return asignaturas;
-}
     public List<String[]> obtenerTodasLasNotasPorAlumno(int idAlumno) {
-    List<String[]> notas = new ArrayList<>();
-    String sql = """
+        List<String[]> notas = new ArrayList<>();
+        String sql = """
         SELECT a.nombre AS asignatura, c.nota, c.fecha
         FROM calificacion c
         JOIN asignatura a ON c.id_asignatura = a.id
         WHERE c.id_alumno = ?
     """;
 
-    try (Connection conn = BaseDatos.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        pstmt.setInt(1, idAlumno);
-        ResultSet rs = pstmt.executeQuery();
+            pstmt.setInt(1, idAlumno);
+            ResultSet rs = pstmt.executeQuery();
 
-        while (rs.next()) {
-            String asignatura = rs.getString("asignatura");
-            String nota = String.valueOf(rs.getDouble("nota"));
-            String fecha = rs.getString("fecha");
-            notas.add(new String[]{asignatura, nota, fecha});
+            while (rs.next()) {
+                String asignatura = rs.getString("asignatura");
+                String nota = String.valueOf(rs.getDouble("nota"));
+                String fecha = rs.getString("fecha");
+                notas.add(new String[]{asignatura, nota, fecha});
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener todas las notas del alumno: " + e.getMessage());
         }
 
-    } catch (SQLException e) {
-        System.out.println("Error al obtener todas las notas del alumno: " + e.getMessage());
+        return notas;
     }
 
-    return notas;
-}
-
-public List<String[]> obtenerNotasPorAsignatura(int idAlumno, String nombreAsignatura) {
-    List<String[]> notas = new ArrayList<>();
-    String sql = """
+    public List<String[]> obtenerNotasPorAsignatura(int idAlumno, String nombreAsignatura) {
+        List<String[]> notas = new ArrayList<>();
+        String sql = """
         SELECT c.nota, c.fecha
         FROM calificacion c
         JOIN asignatura a ON c.id_asignatura = a.id
         WHERE c.id_alumno = ? AND a.nombre = ?
     """;
 
-    try (Connection conn = BaseDatos.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        pstmt.setInt(1, idAlumno);
-        pstmt.setString(2, nombreAsignatura);
-        ResultSet rs = pstmt.executeQuery();
+            pstmt.setInt(1, idAlumno);
+            pstmt.setString(2, nombreAsignatura);
+            ResultSet rs = pstmt.executeQuery();
 
-        while (rs.next()) {
-            String nota = String.valueOf(rs.getDouble("nota"));
-            String fecha = rs.getString("fecha");
-            notas.add(new String[]{nota, fecha});
+            while (rs.next()) {
+                String nota = String.valueOf(rs.getDouble("nota"));
+                String fecha = rs.getString("fecha");
+                notas.add(new String[]{nota, fecha});
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener notas del alumno: " + e.getMessage());
         }
 
-    } catch (SQLException e) {
-        System.out.println("Error al obtener notas del alumno: " + e.getMessage());
+        return notas;
     }
-
-    return notas;
-}
-
 
     // Método para actualizar un alumno existente
     public boolean actualizarAlumno(Alumno alumno) {
-        String sql = "UPDATE alumno SET nombre = ?, apellido = ?, email = ?, fecha_nacimiento = ? " +
-                     "WHERE id = ?";
+        String sql = "UPDATE alumno SET nombre = ?, apellido = ?, email = ?, fecha_nacimiento = ? "
+                + "WHERE id = ?";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, alumno.getNombre());
             pstmt.setString(2, alumno.getApellido());
@@ -305,8 +304,7 @@ public List<String[]> obtenerNotasPorAsignatura(int idAlumno, String nombreAsign
     public boolean eliminarAlumno(int id) {
         String sql = "DELETE FROM alumno WHERE id = ?";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, id);
 
@@ -317,11 +315,12 @@ public List<String[]> obtenerNotasPorAsignatura(int idAlumno, String nombreAsign
             System.out.println("Error al eliminar alumno: " + e.getMessage());
             return false;
         }
-    }public boolean asignarAlumnoAGrupo(int idAlumno, int idGrupo) {
+    }
+
+    public boolean asignarAlumnoAGrupo(int idAlumno, int idGrupo) {
         String sql = "INSERT INTO alumno_grupos (id_alumno, id_grupo) VALUES (?, ?)";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, idAlumno);
             pstmt.setInt(2, idGrupo);
@@ -336,21 +335,55 @@ public List<String[]> obtenerNotasPorAsignatura(int idAlumno, String nombreAsign
     }
 
     public int obtenerIdGrupoPorAlumno(int idAlumno) {
-    String sql = "SELECT id_grupo FROM alumno_grupos WHERE id_alumno = ?";
-    int idGrupo = -1;
+        String sql = "SELECT id_grupo FROM alumno_grupos WHERE id_alumno = ?";
+        int idGrupo = -1;
 
-    try (Connection conn = BaseDatos.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        pstmt.setInt(1, idAlumno);
-        ResultSet rs = pstmt.executeQuery();
+            pstmt.setInt(1, idAlumno);
+            ResultSet rs = pstmt.executeQuery();
 
-        if (rs.next()) {
-            idGrupo = rs.getInt("id_grupo");
+            if (rs.next()) {
+                idGrupo = rs.getInt("id_grupo");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener el grupo del alumno: " + e.getMessage());
+        }
+        return idGrupo;
+    }
+
+    public List<Alumno> obtenerAlumnosPorAsignatura(int idAsignatura) {
+        List<Alumno> alumnos = new ArrayList<>();
+        String sql = """
+            SELECT a.id, a.nombre, a.apellido, a.email
+            FROM alumno a
+            JOIN alumno_grupos ag ON a.id = ag.id_alumno
+            JOIN grupo_asignaturas ga ON ag.id_grupo = ga.id_grupo
+            WHERE ga.id_asignatura = ?
+        """;
+
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idAsignatura);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Alumno alumno = new Alumno(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("apellido"),
+                        rs.getString("email"),
+                        null,
+                        null
+                );
+                alumnos.add(alumno);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener alumnos por asignatura: " + e.getMessage());
         }
 
-    } catch (SQLException e) {
-        System.out.println("Error al obtener el grupo del alumno: " + e.getMessage());
+        return alumnos;
     }
-    return idGrupo;}
 }

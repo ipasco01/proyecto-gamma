@@ -6,7 +6,9 @@ package proyectogamma.views;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.ui.FlatComboBoxUI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import proyectogamma.controller.AlumnoController;
 import proyectogamma.controller.DocenteController;
 import proyectogamma.model.Docente;
 import proyectogamma.model.Notificacion;
+import proyectogamma.utils.PDFGenerator;
 /**
  *
  * @author Isabel
@@ -95,7 +98,7 @@ jComboBox1.addActionListener(e -> {
 
             DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
             for (Notificacion notificacion : notificaciones) {
-                System.out.println("Agregando notificación: " + notificacion.getTitulo());
+                //System.out.println("Agregando notificación: " + notificacion.getTitulo());
                 notificacionesModel.addElement(notificacion.getTitulo() + " - " + notificacion.getMensaje());
             }
 
@@ -111,13 +114,13 @@ jComboBox1.addActionListener(e -> {
     if (alumno != null) {
         // Obtener el ID del alumno
         int idAlumno = alumno.getId();
-        System.out.println("Cargando notificaciones personales para el alumno con ID: " + idAlumno);
+        //System.out.println("Cargando notificaciones personales para el alumno con ID: " + idAlumno);
 
         NotificacionController notificacionController = new NotificacionController();
         List<Notificacion> notificaciones = notificacionController.obtenerNotificacionesPorAlumno(idAlumno);
 
         if (notificaciones != null && !notificaciones.isEmpty()) {
-            System.out.println("Notificaciones personales encontradas: " + notificaciones.size());
+            //System.out.println("Notificaciones personales encontradas: " + notificaciones.size());
 
             DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
             DocenteController docenteController = new DocenteController();
@@ -134,7 +137,7 @@ jComboBox1.addActionListener(e -> {
                     }
                 }
 
-                System.out.println("Agregando notificación personal: " + notificacion.getTitulo());
+                //System.out.println("Agregando notificación personal: " + notificacion.getTitulo());
                 notificacionesModel.addElement(notificacion.getTitulo() + " - " + notificacion.getMensaje() + " - " + nombreDocente);
             }
 
@@ -280,6 +283,7 @@ private void mostrarPromediosDesdeTabla() {
         jTextArea1 = new javax.swing.JTextArea();
         jLabel14 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        DescargarNotas = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
@@ -427,7 +431,7 @@ private void mostrarPromediosDesdeTabla() {
         jComboBox1.setBorder(null);
         jScrollPane1.setViewportView(jComboBox1);
 
-        jPanel6.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 255, 50));
+        jPanel6.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 270, 50));
 
         jLabel9.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel9.setText("Notas");
@@ -472,10 +476,10 @@ private void mostrarPromediosDesdeTabla() {
 
         jLabel11.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel11.setText("Promedios");
-        jPanel6.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 230, -1, 20));
+        jPanel6.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 230, 110, 20));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
-        jPanel6.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 410, -1, -1));
+        jPanel6.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 420, -1, -1));
 
         jScrollPane11.setBorder(null);
 
@@ -485,11 +489,25 @@ private void mostrarPromediosDesdeTabla() {
         jTextArea1.setBorder(null);
         jScrollPane11.setViewportView(jTextArea1);
 
-        jPanel6.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 264, 255, 210));
+        jPanel6.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 270, 270, 210));
         jPanel6.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 98, 255, 20));
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
         jPanel6.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(-20, 200, -1, -1));
+
+        DescargarNotas.setBackground(new java.awt.Color(0, 153, 102));
+        DescargarNotas.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        DescargarNotas.setForeground(new java.awt.Color(255, 255, 255));
+        DescargarNotas.setText("Descargar Notas");
+        DescargarNotas.setToolTipText("");
+        DescargarNotas.setBorder(null);
+        DescargarNotas.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        DescargarNotas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DescargarNotasActionPerformed(evt);
+            }
+        });
+        jPanel6.add(DescargarNotas, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 149, 270, 30));
 
         jTabbedPane4.addTab("Ver Asignaturas", jPanel6);
 
@@ -602,6 +620,43 @@ private void mostrarPromediosDesdeTabla() {
     }
     }//GEN-LAST:event_CambioContraseñalogin
 
+    private void DescargarNotasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DescargarNotasActionPerformed
+         if (alumno != null) {
+        try {
+            // Obtener todas las notas desde la tabla
+            DefaultTableModel modelo = (DefaultTableModel) tablaNotas.getModel();
+            List<String[]> notas = new ArrayList<>();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+            for (int i = 0; i < modelo.getRowCount(); i++) {
+                String asignatura = (String) modelo.getValueAt(i, 0); // Columna Asignatura
+                String nota = modelo.getValueAt(i, 1).toString();    // Columna Nota
+
+                // Obtener y convertir la fecha
+                Object fechaObj = modelo.getValueAt(i, 2); // Columna Fecha
+                String fechaFormateada;
+                if (fechaObj instanceof Date) {
+                    fechaFormateada = dateFormat.format((Date) fechaObj);
+                } else if (fechaObj instanceof String) {
+                    fechaFormateada = (String) fechaObj; // Suponemos que ya está formateada como String
+                } else {
+                    throw new IllegalArgumentException("Formato de fecha desconocido en la tabla.");
+                }
+
+                notas.add(new String[]{asignatura, nota, fechaFormateada});
+            }
+
+            // Generar el PDF
+            PDFGenerator.generarPDFNotasAlumno(alumno.getNombre() + " " + alumno.getApellido(), notas);
+            javax.swing.JOptionPane.showMessageDialog(this, "El PDF de las notas se ha descargado en la carpeta de Descargas.");
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al generar el PDF: " + e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    } else {
+        javax.swing.JOptionPane.showMessageDialog(this, "No se encontraron notas para descargar.");
+    }
+    }//GEN-LAST:event_DescargarNotasActionPerformed
+
     
     /**
      * @param args the command line arguments
@@ -621,6 +676,7 @@ private void mostrarPromediosDesdeTabla() {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton CambioContraseña;
+    private javax.swing.JButton DescargarNotas;
     private javax.swing.JButton closeSession;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
