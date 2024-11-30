@@ -80,6 +80,42 @@ public class CalificacionController {
         return calificacion;
 
     }
+    public List<Calificacion> obtenerCalificacionesConTitulos(int idAlumno) {
+        List<Calificacion> calificaciones = new ArrayList<>();
+        String sql = """
+        SELECT c.id, c.id_alumno, c.id_asignatura, a.nombre AS titulo_asignatura, 
+               e.nombre AS titulo_evaluacion, c.nota, e.peso, c.fecha 
+        FROM calificacion c
+        JOIN asignatura a ON c.id_asignatura = a.id
+        JOIN evaluaciones e ON c.id_examen = e.id
+        WHERE c.id_alumno = ?
+        """;
+
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idAlumno);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Calificacion calificacion = new Calificacion(
+                            rs.getInt("id"),
+                            rs.getInt("id_alumno"),
+                            rs.getInt("id_asignatura"),
+                            rs.getString("titulo_asignatura"),
+                            rs.getString("titulo_evaluacion"),
+                            rs.getDouble("nota"),
+                            rs.getDouble("peso"),
+                            rs.getDate("fecha")
+                    );
+                    calificaciones.add(calificacion);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al obtener calificaciones con títulos: " + e.getMessage());
+        }
+
+        return calificaciones;
+    }
 
     // Método para agregar una nueva calificación
     public boolean agregarCalificacion(Calificacion calificacion) {

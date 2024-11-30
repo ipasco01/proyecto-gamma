@@ -111,19 +111,22 @@ public class PDFGenerator {
             document.add(new Paragraph("\n")); // Espaciado
 
             // Crear una tabla para las notas
-            Table table = new Table(UnitValue.createPercentArray(new float[]{4, 8, 4})); // Proporciones: 4-8-4
+            Table table = new Table(UnitValue.createPercentArray(new float[]{4, 4,4,4, 4})); // Proporciones: 4-8-4
             table.setWidth(UnitValue.createPercentValue(100)); // Ancho total del 100%
             // Encabezados de la tabla
             table.addHeaderCell(new Cell().add(new Paragraph("Asignatura").setBold()));
+            table.addHeaderCell(new Cell().add(new Paragraph("Evaluación").setBold()));
             table.addHeaderCell(new Cell().add(new Paragraph("Nota").setBold()));
+            table.addHeaderCell(new Cell().add(new Paragraph("Peso").setBold()));
             table.addHeaderCell(new Cell().add(new Paragraph("Fecha").setBold()));
-
             // Agregar las notas como filas
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
             for (String[] nota : notas) {
                 table.addCell(new Cell().add(new Paragraph(nota[0]))); // Asignatura
-                table.addCell(new Cell().add(new Paragraph(nota[1]))); // Nota
-                table.addCell(new Cell().add(new Paragraph(nota[2]))); // Fecha
+                table.addCell(new Cell().add(new Paragraph(nota[1]))); // Ev
+                table.addCell(new Cell().add(new Paragraph(nota[2]))); // Not
+                table.addCell(new Cell().add(new Paragraph(nota[3]))); // Pes
+                table.addCell(new Cell().add(new Paragraph(nota[4]))); // Fecha
             }
 
             document.add(table); // Agregar la tabla al documento

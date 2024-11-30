@@ -150,4 +150,39 @@ public class AsignaturaController {
             return false;
         }
     }
+    public List<Asignatura> obtenerAsignaturasPorGrupo(int idGrupo) {
+    String sql = """
+        SELECT a.id, a.nombre, a.id_profesor, CONCAT(p.nombre, ' ', p.apellido) AS nombreProfesor
+        FROM asignatura a
+        JOIN grupo_asignaturas ga ON a.id = ga.id_asignatura
+        LEFT JOIN docente p ON a.id_profesor = p.id
+        WHERE ga.id_grupo = ?
+    """;
+
+    List<Asignatura> asignaturas = new ArrayList<>();
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setInt(1, idGrupo);
+
+        try (ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Asignatura asignatura = new Asignatura(
+                    rs.getInt("id"),
+                    rs.getString("nombre"),
+                    rs.getInt("id_profesor"),
+                    rs.getString("nombreProfesor") // Obtiene el nombre completo del profesor
+                );
+                asignaturas.add(asignatura);
+            }
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener asignaturas por grupo: " + e.getMessage());
+    }
+
+    return asignaturas;
+}
+
 }

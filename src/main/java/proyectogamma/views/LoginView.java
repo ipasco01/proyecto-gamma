@@ -151,7 +151,7 @@ public class LoginView extends javax.swing.JFrame {
                     //new PadreView(usuario).setVisible(true);
                     break;
                 case "Admin":
-                    //new AdminView(usuario).setVisible(true);
+                    new AdminView(usuario).setVisible(true);
                     break;
                 default:
                     lblMensaje.setText("Rol desconocido.");

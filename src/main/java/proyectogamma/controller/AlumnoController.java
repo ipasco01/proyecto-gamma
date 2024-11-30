@@ -10,6 +10,7 @@ import proyectogamma.model.BaseDatos;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import proyectogamma.model.Calificacion;
 import proyectogamma.model.Usuario;
 
 public class AlumnoController {
@@ -90,6 +91,38 @@ public class AlumnoController {
         }
 
         return idAlumno;
+    }
+
+    public List<Alumno> obtenerAlumnosOrdenadosPorApellido(int idGrupo) {
+        List<Alumno> alumnos = new ArrayList<>();
+        String sql = "SELECT a.id, a.nombre, a.apellido, a.email, a.fecha_nacimiento "
+                + "FROM alumno a "
+                + "INNER JOIN alumno_grupos ag ON a.id = ag.id_alumno "
+                + "WHERE ag.id_grupo = ? "
+                + "ORDER BY a.apellido ASC"; // Ordenar por apellido
+
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idGrupo);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Alumno alumno = new Alumno(
+                            rs.getInt("id"),
+                            rs.getString("nombre"),
+                            rs.getString("apellido"),
+                            rs.getString("email"),
+                            rs.getDate("fecha_nacimiento"),
+                            null
+                    );
+                    alumnos.add(alumno);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al obtener alumnos ordenados por apellido: " + e.getMessage());
+        }
+
+        return alumnos;
     }
 
     public boolean agregarAlumno(Alumno alumno, String nombreUsuario, String contrasena, int idGrupo) {
@@ -222,33 +255,7 @@ public class AlumnoController {
         return asignaturas;
     }
 
-    public List<String[]> obtenerTodasLasNotasPorAlumno(int idAlumno) {
-        List<String[]> notas = new ArrayList<>();
-        String sql = """
-        SELECT a.nombre AS asignatura, c.nota, c.fecha
-        FROM calificacion c
-        JOIN asignatura a ON c.id_asignatura = a.id
-        WHERE c.id_alumno = ?
-    """;
-
-        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, idAlumno);
-            ResultSet rs = pstmt.executeQuery();
-
-            while (rs.next()) {
-                String asignatura = rs.getString("asignatura");
-                String nota = String.valueOf(rs.getDouble("nota"));
-                String fecha = rs.getString("fecha");
-                notas.add(new String[]{asignatura, nota, fecha});
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error al obtener todas las notas del alumno: " + e.getMessage());
-        }
-
-        return notas;
-    }
+    
 
     public List<String[]> obtenerNotasPorAsignatura(int idAlumno, String nombreAsignatura) {
         List<String[]> notas = new ArrayList<>();

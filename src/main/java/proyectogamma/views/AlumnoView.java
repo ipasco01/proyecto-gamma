@@ -8,11 +8,13 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.ui.FlatComboBoxUI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 import javax.swing.RowFilter;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -24,11 +26,15 @@ import proyectogamma.controller.UsuarioController;
 import proyectogamma.controller.NotificacionController;
 import proyectogamma.controller.AlumnoController;
 import proyectogamma.controller.AlumnoGrupoController;
+import proyectogamma.controller.CalificacionController;
 import proyectogamma.controller.DocenteController;
 import proyectogamma.controller.GrupoAsignaturaController;
 import proyectogamma.controller.GrupoController;
+import proyectogamma.controller.HorarioAsignaturaController;
 import proyectogamma.model.AlumnoGrupos;
+import proyectogamma.model.Calificacion;
 import proyectogamma.model.Docente;
+import proyectogamma.model.HorarioAsignatura;
 import proyectogamma.model.Notificacion;
 import proyectogamma.utils.PDFGenerator;
 
@@ -76,7 +82,8 @@ public class AlumnoView extends javax.swing.JFrame {
             String asignaturaSeleccionada = (String) jComboBox1.getSelectedItem();
             cargarNotasPorAsignatura(asignaturaSeleccionada);
         });
-
+        jTextPane1.setContentType("text/html");
+        jTextPane1.setText("<html><body><i>Selecciona una notificación para ver más detalles.</i></body></html>");
         setLocationRelativeTo(null); // Centrar la ventana
 
         if (alumno != null) {
@@ -84,14 +91,20 @@ public class AlumnoView extends javax.swing.JFrame {
             AlumnoGrupoController alumnoGrupoController = new AlumnoGrupoController();
             AlumnoGrupos alumnoGrupo = alumnoGrupoController.obtenerAlumnoGrupoPorIdAlumno(alumno.getId());
             if (alumnoGrupo != null) {
+
                 GrupoController grupoController = new GrupoController();
                 String nombreGrupo = grupoController.obtenerNombreGrupoPorId(alumnoGrupo.getIdGrupo());
-                lblBienvenida1.setText("Grupo: " + (nombreGrupo != null ? nombreGrupo : "Sin Grupo"));
-                GrupoAsignaturaController grupoAsignaturaController = new GrupoAsignaturaController();
-    String asignaturasHTML = grupoAsignaturaController.obtenerAsignaturasHTMLPorGrupo(alumnoGrupo.getIdGrupo());
+                int idGrupoAlumno = alumnoGrupo.getIdGrupo();
 
-    // Mostrar las asignaturas en el JLabel
-    lblAsignaturas.setText(asignaturasHTML);
+                cargarTablaAlumnosOrdenados(idGrupoAlumno);
+                lblBienvenida1.setText("Grupo: " + (nombreGrupo != null ? nombreGrupo : "Sin Grupo"));
+                lblBienvenida3.setText("Grupo: " + (nombreGrupo != null ? nombreGrupo : "Sin Grupo"));
+                GrupoAsignaturaController grupoAsignaturaController = new GrupoAsignaturaController();
+                String asignaturasHTML = grupoAsignaturaController.obtenerAsignaturasHTMLPorGrupo(alumnoGrupo.getIdGrupo());
+
+                // Mostrar las asignaturas en el JLabel
+                lblAsignaturas.setText(asignaturasHTML);
+                cargarHorario(idGrupoAlumno);
             } else {
                 lblBienvenida1.setText("Grupo: Sin Grupo");
             }
@@ -103,26 +116,37 @@ public class AlumnoView extends javax.swing.JFrame {
 
     private void cargarNotificacionesGrupales() {
         if (alumno != null) {
-            System.out.println("Alumno encontrado: " + alumno.getNombre());
-
-            // Obtener el ID del grupo asociado al alumno
             AlumnoController alumnoController = new AlumnoController();
             int idGrupoAlumno = alumnoController.obtenerIdGrupoPorAlumno(alumno.getId());
-            System.out.println("ID del grupo del alumno: " + idGrupoAlumno);
 
-            if (idGrupoAlumno != -1) { // Verifica que se haya encontrado un grupo
+            if (idGrupoAlumno != -1) { // Si el alumno pertenece a un grupo
                 NotificacionController notificacionController = new NotificacionController();
                 List<Notificacion> notificaciones = notificacionController.obtenerNotificacionesPorGrupo(idGrupoAlumno);
-                System.out.println("Notificaciones encontradas: " + notificaciones.size());
 
                 DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
                 for (Notificacion notificacion : notificaciones) {
-                    //System.out.println("Agregando notificación: " + notificacion.getTitulo());
-                    notificacionesModel.addElement(notificacion.getTitulo() + " - " + notificacion.getMensaje());
-                }
+                    String nombreDocente = "Sin docente asignado";
 
+                    if (notificacion.getIdDocente() != 0) {
+                        Docente docente = new DocenteController().obtenerDocentePorId(notificacion.getIdDocente());
+                        if (docente != null) {
+                            nombreDocente = docente.getNombre() + " " + docente.getApellido();
+                        }
+                    }
+
+                    // Formatear notificación en HTML
+                    String formattedNotification = "<html><body>"
+                            + "<b>" + notificacion.getTitulo() + "</b><br>"
+                            + "<i>" + notificacion.getFechaEnvio() + "</i><br>"
+                            + notificacion.getMensaje() + "<br>"
+                            + "<small>Por: " + nombreDocente + "</small>"
+                            + "</body></html>";
+
+                    notificacionesModel.addElement(formattedNotification);
+                }
                 listaNotificacionesGrupales.setModel(notificacionesModel);
             } else {
+                listaNotificacionesGrupales.setModel(new DefaultListModel<>()); // Vaciar la lista
                 System.out.println("El alumno no pertenece a ningún grupo.");
             }
         } else {
@@ -132,74 +156,138 @@ public class AlumnoView extends javax.swing.JFrame {
 
     private void cargarNotificacionesPersonales() {
         if (alumno != null) {
-            // Obtener el ID del alumno
             int idAlumno = alumno.getId();
-            //System.out.println("Cargando notificaciones personales para el alumno con ID: " + idAlumno);
-
             NotificacionController notificacionController = new NotificacionController();
             List<Notificacion> notificaciones = notificacionController.obtenerNotificacionesPorAlumno(idAlumno);
 
-            if (notificaciones != null && !notificaciones.isEmpty()) {
-                //System.out.println("Notificaciones personales encontradas: " + notificaciones.size());
+            DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
+            for (Notificacion notificacion : notificaciones) {
+                String nombreDocente = "Sin docente asignado";
 
-                DefaultListModel<String> notificacionesModel = new DefaultListModel<>();
-                DocenteController docenteController = new DocenteController();
-
-                for (Notificacion notificacion : notificaciones) {
-                    int docenteId = notificacion.getIdDocente();
-                    String nombreDocente = "Sin docente asignado";
-
-                    // Si existe un docente asociado, obtener su información
-                    if (docenteId != 0) {
-                        Docente docente = docenteController.obtenerDocentePorId(docenteId);
-                        if (docente != null) {
-                            nombreDocente = docente.getNombre() + " " + docente.getApellido();
-                        }
+                if (notificacion.getIdDocente() != 0) {
+                    Docente docente = new DocenteController().obtenerDocentePorId(notificacion.getIdDocente());
+                    if (docente != null) {
+                        nombreDocente = docente.getNombre() + " " + docente.getApellido();
                     }
-
-                    //System.out.println("Agregando notificación personal: " + notificacion.getTitulo());
-                    notificacionesModel.addElement(notificacion.getTitulo() + " - " + notificacion.getMensaje() + " - " + nombreDocente);
                 }
 
-                listaNotificacionesPersonal3.setModel(notificacionesModel); // Asignar a la lista de notificaciones personales
-            } else {
-                System.out.println("No se encontraron notificaciones personales para el alumno.");
+                // Formatear notificación en HTML
+                String formattedNotification = "<html><body>"
+                        + "<b>" + notificacion.getTitulo() + "</b><br>"
+                        + "<i>" + notificacion.getFechaEnvio() + "</i><br>"
+                        + notificacion.getMensaje() + "<br>"
+                        + "<small>Por: " + nombreDocente + "</small>"
+                        + "</body></html>";
+
+                notificacionesModel.addElement(formattedNotification);
             }
+            listaNotificacionesPersonal3.setModel(notificacionesModel);
+
         } else {
-            System.out.println("El objeto alumno es nulo. No se pueden cargar las notificaciones personales.");
+            System.out.println("Alumno no encontrado.");
         }
     }
 
     private void mostrarNotificacionSeleccionada(javax.swing.JList<String> lista) {
-        // Verifica si hay un elemento seleccionado
         int selectedIndex = lista.getSelectedIndex();
         if (selectedIndex != -1) {
-            // Obtén el modelo de la lista
             DefaultListModel<String> modelo = (DefaultListModel<String>) lista.getModel();
-            // Obtén la notificación seleccionada
             String notificacionSeleccionada = modelo.getElementAt(selectedIndex);
-            // Muestra la notificación en el JTextField
-            jTextField1.setText(notificacionSeleccionada);
+
+            // Mostrar notificación seleccionada en HTML en un JTextPane (mejor para formato HTML)
+            jTextPane1.setText(notificacionSeleccionada);
+        } else {
+            jTextPane1.setText("<html><body><i>Selecciona una notificación para ver más detalles.</i></body></html>");
         }
+    }
+
+    private void cargarTablaAlumnosOrdenados(int idGrupo) {
+        AlumnoController alumnoController = new AlumnoController();
+        List<Alumno> alumnos = alumnoController.obtenerAlumnosOrdenadosPorApellido(idGrupo);
+
+        // Modelo de la tabla con las columnas necesarias
+        DefaultTableModel model = new DefaultTableModel(new String[]{"#", "Apellido", "Inicial del Nombre"}, 0);
+
+        int index = 1; // Inicializamos el índice en 1
+        for (Alumno alumno : alumnos) {
+            // Agregar apellido e inicial del nombre
+            String inicialNombre = alumno.getNombre().substring(0, 1).toUpperCase(); // Obtener la inicial
+            model.addRow(new Object[]{index++, alumno.getApellido(), inicialNombre + "."}); // Índice, apellido, inicial
+        }
+
+        tablaAlumnos.setModel(model);
     }
 
     private void cargarTodasLasNotas() {
         if (alumno != null) {
-            AlumnoController alumnoController = new AlumnoController();
-            List<String[]> todasLasNotas = alumnoController.obtenerTodasLasNotasPorAlumno(alumno.getId());
+            CalificacionController calificacionController = new CalificacionController();
+            List<Calificacion> calificaciones = calificacionController.obtenerCalificacionesConTitulos(alumno.getId());
 
             DefaultTableModel modelo = new DefaultTableModel();
             modelo.addColumn("Asignatura");
+            modelo.addColumn("Evaluación");
             modelo.addColumn("Nota");
+            modelo.addColumn("Peso (%)");
             modelo.addColumn("Fecha");
 
-            for (String[] nota : todasLasNotas) {
-                modelo.addRow(nota);
+            for (Calificacion calificacion : calificaciones) {
+                modelo.addRow(new Object[]{
+                    calificacion.getTituloAsignatura(),
+                    calificacion.getTitulo(),
+                    String.format("%.2f", calificacion.getNota()),
+                    String.format("%.2f", calificacion.getPeso()),
+                    new SimpleDateFormat("dd/MM/yyyy").format(calificacion.getFecha())
+                });
             }
 
             tablaNotas.setModel(modelo);
+
+            // Mostrar los promedios
+            mostrarPromediosDesdeTabla();
         }
     }
+   private void cargarHorario(int idGrupo) {
+    HorarioAsignaturaController horarioController = new HorarioAsignaturaController();
+    List<HorarioAsignatura> horarios = horarioController.obtenerHorariosPorGrupo(idGrupo);
+
+    // Crear una matriz para el horario limitado de 7:00 a 14:00
+    String[][] timetable = new String[8][7]; // 8 horas (7:00 - 14:00) y 7 días (Lunes a Sábado)
+    for (HorarioAsignatura horario : horarios) {
+        String dia = horario.getDia();
+        int columna = switch (dia.toLowerCase()) {
+            case "lunes" -> 1;
+            case "martes" -> 2;
+            case "miercoles" -> 3;
+            case "jueves" -> 4;
+            case "viernes" -> 5;
+            case "sabado" -> 6;
+            default -> 0;
+        };
+
+        int filaInicio = horario.getHoraInicio().toLocalTime().getHour() - 7; // Ajustar índice de 7:00
+        int filaFin = horario.getHoraFin().toLocalTime().getHour() - 7;
+
+        // Marcar el horario
+        for (int i = filaInicio; i < filaFin; i++) {
+            if (i >= 0 && i < timetable.length) { // Validar rango de fila
+                timetable[i][columna] = horario.getNombreAsignatura();
+            }
+        }
+    }
+
+    // Crear modelo para la tabla
+    DefaultTableModel model = new DefaultTableModel(new Object[]{"Hora", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"}, 8);
+    for (int i = 0; i < 8; i++) {
+        model.setValueAt((i + 7) + ":00", i, 0); // Primera columna para las horas
+        for (int j = 1; j < 7; j++) {
+            model.setValueAt(timetable[i][j] != null ? timetable[i][j] : "", i, j);
+        }
+    }
+
+    tablaHorario.setModel(model);
+}
+
+
 
     private void cargarNotasPorAsignatura(String asignaturaSeleccionada) {
         if (asignaturaSeleccionada != null) {
@@ -220,7 +308,7 @@ public class AlumnoView extends javax.swing.JFrame {
             AlumnoController alumnoController = new AlumnoController();
             int idGrupo = new AlumnoController().obtenerIdGrupoPorAlumno(alumno.getId());
             List<String> asignaturas = alumnoController.obtenerAsignaturasPorGrupo(idGrupo);
-
+            jComboBox1.addItem("Todas");
             if (!asignaturas.isEmpty()) {
                 asignaturas.forEach(asignatura -> jComboBox1.addItem(asignatura));
             } else {
@@ -233,44 +321,67 @@ public class AlumnoView extends javax.swing.JFrame {
         DefaultTableModel modelo = (DefaultTableModel) tablaNotas.getModel();
 
         if (modelo.getRowCount() > 0) {
-            // Map para almacenar las notas agrupadas por asignatura
-            Map<String, List<Double>> asignaturaNotas = new HashMap<>();
+            // Map para almacenar las notas y pesos agrupados por asignatura
+            Map<String, List<double[]>> asignaturaNotas = new HashMap<>();
 
-            // Recorrer las filas de la tabla y agrupar notas por asignatura
+            // Recorrer las filas de la tabla y agrupar notas y pesos por asignatura
             for (int i = 0; i < modelo.getRowCount(); i++) {
-                String asignatura = (String) modelo.getValueAt(i, 0); // Columna "Asignatura"
-                double nota = Double.parseDouble(modelo.getValueAt(i, 1).toString()); // Columna "Nota"
+                String asignatura = modelo.getValueAt(i, 0).toString(); // Columna "Asignatura"
+                double nota = Double.parseDouble(modelo.getValueAt(i, 2).toString()); // Columna "Nota"
+                double peso = Double.parseDouble(modelo.getValueAt(i, 3).toString()); // Columna "Peso (%)"
 
                 asignaturaNotas.putIfAbsent(asignatura, new ArrayList<>());
-                asignaturaNotas.get(asignatura).add(nota);
+                asignaturaNotas.get(asignatura).add(new double[]{nota, peso});
             }
 
-            // Construir el texto para los promedios
-            StringBuilder textoPromedios = new StringBuilder("Promedios por asignatura:\n");
+            // Construir el texto para los promedios en formato HTML
+            StringBuilder textoPromedios = new StringBuilder("<html>");
+            textoPromedios.append("<h2>Promedios por asignatura:</h2>");
+            textoPromedios.append("<ul>");
+
             double sumaGeneral = 0;
-            int totalNotas = 0;
+            double totalPesoGeneral = 0;
 
-            for (Map.Entry<String, List<Double>> entry : asignaturaNotas.entrySet()) {
+            for (Map.Entry<String, List<double[]>> entry : asignaturaNotas.entrySet()) {
                 String asignatura = entry.getKey();
-                List<Double> notas = entry.getValue();
+                List<double[]> notasPesos = entry.getValue();
 
-                // Calcular promedio por asignatura
-                double promedio = notas.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-                textoPromedios.append("- ").append(asignatura).append(": ").append(String.format("%.2f", promedio)).append("\n");
+                // Calcular promedio ponderado por asignatura
+                double sumaPonderada = 0;
+                double sumaPesos = 0;
+
+                for (double[] np : notasPesos) {
+                    sumaPonderada += np[0] * np[1];
+                    sumaPesos += np[1];
+                }
+
+                double promedio = sumaPesos > 0 ? sumaPonderada / sumaPesos : 0.0;
+
+                // Agregar al texto en HTML
+                textoPromedios.append("<li><strong>").append(asignatura).append("</strong>: ")
+                        .append(String.format("%.2f", promedio))
+                        .append("</li>");
 
                 // Sumar para el promedio general
-                sumaGeneral += notas.stream().mapToDouble(Double::doubleValue).sum();
-                totalNotas += notas.size();
+                sumaGeneral += sumaPonderada;
+                totalPesoGeneral += sumaPesos;
             }
 
-            // Calcular promedio general
-            double promedioGeneral = totalNotas > 0 ? sumaGeneral / totalNotas : 0.0;
-            textoPromedios.append("\nPromedio general: ").append(String.format("%.2f", promedioGeneral));
+            textoPromedios.append("</ul>");
+
+            // Calcular promedio general ponderado
+            double promedioGeneral = totalPesoGeneral > 0 ? sumaGeneral / totalPesoGeneral : 0.0;
+            textoPromedios.append("<h3>Promedio general: ")
+                    .append(String.format("%.2f", promedioGeneral))
+                    .append("</h3>");
+            textoPromedios.append("</html>");
 
             // Mostrar en jTextArea1
-            jTextArea1.setText(textoPromedios.toString());
+            jTextPane2.setContentType("text/html");
+            jTextPane2.setText(textoPromedios.toString());
         } else {
-            jTextArea1.setText("No hay notas disponibles para calcular los promedios.");
+            jTextPane2.setContentType("text/plain");
+            jTextPane2.setText("No hay notas disponibles para calcular los promedios.");
         }
     }
 
@@ -284,8 +395,8 @@ public class AlumnoView extends javax.swing.JFrame {
         closeSession = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         lblBienvenida2 = new javax.swing.JLabel();
-        lblBienvenida1 = new javax.swing.JLabel();
         lblAsignaturas = new javax.swing.JLabel();
+        lblBienvenida3 = new javax.swing.JLabel();
         mainPanel3 = new javax.swing.JPanel();
         jTabbedPane4 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
@@ -295,8 +406,18 @@ public class AlumnoView extends javax.swing.JFrame {
         jScrollPane9 = new javax.swing.JScrollPane();
         listaNotificacionesPersonal3 = new javax.swing.JList<>();
         jLabel8 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextPane1 = new javax.swing.JTextPane();
+        jPanel4 = new javax.swing.JPanel();
+        jscrollpanelhorarios = new javax.swing.JScrollPane();
+        tablaHorario = new javax.swing.JTable();
+        jLabel18 = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jComboBox1 = new javax.swing.JComboBox<>();
@@ -306,12 +427,17 @@ public class AlumnoView extends javax.swing.JFrame {
         tablaNotas = new javax.swing.JTable();
         jLabel11 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        jScrollPane11 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jLabel14 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         DescargarNotas = new javax.swing.JButton();
+        jLabel12 = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTextPane2 = new javax.swing.JTextPane();
         jPanel3 = new javax.swing.JPanel();
+        jLabel16 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tablaAlumnos = new javax.swing.JTable();
+        lblBienvenida1 = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
@@ -369,17 +495,17 @@ public class AlumnoView extends javax.swing.JFrame {
         lblBienvenida2.setText(" Portal del Estudiante");
         jPanel9.add(lblBienvenida2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, 190, -1));
 
-        lblBienvenida1.setBackground(new java.awt.Color(255, 255, 255));
-        lblBienvenida1.setFont(new java.awt.Font("Poppins Medium", 3, 14)); // NOI18N
-        lblBienvenida1.setForeground(new java.awt.Color(255, 255, 255));
-        lblBienvenida1.setText("jLabel2");
-        jPanel9.add(lblBienvenida1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 310, 130, -1));
-
         lblAsignaturas.setBackground(new java.awt.Color(255, 255, 255));
         lblAsignaturas.setFont(new java.awt.Font("Poppins Medium", 3, 14)); // NOI18N
         lblAsignaturas.setForeground(new java.awt.Color(255, 255, 255));
         lblAsignaturas.setText("jLabel2");
         jPanel9.add(lblAsignaturas, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 370, 130, -1));
+
+        lblBienvenida3.setBackground(new java.awt.Color(255, 255, 255));
+        lblBienvenida3.setFont(new java.awt.Font("Poppins Medium", 3, 14)); // NOI18N
+        lblBienvenida3.setForeground(new java.awt.Color(255, 255, 255));
+        lblBienvenida3.setText("jLabel2");
+        jPanel9.add(lblBienvenida3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 310, 130, -1));
 
         jPanel8.add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 190, 600));
 
@@ -403,7 +529,8 @@ public class AlumnoView extends javax.swing.JFrame {
         listaNotificacionesGrupales.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         listaNotificacionesGrupales.setModel(listaNotificacionesGrupales.getModel());
         listaNotificacionesGrupales.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        listaNotificacionesGrupales.setFixedCellHeight(60);
+        listaNotificacionesGrupales.setFixedCellHeight(70);
+        listaNotificacionesGrupales.setLayoutOrientation(javax.swing.JList.VERTICAL_WRAP);
         listaNotificacionesGrupales.setSelectionBackground(new java.awt.Color(0, 0, 204));
         listaNotificacionesGrupales.setSelectionForeground(new java.awt.Color(255, 255, 255));
         listaNotificacionesGrupales.setVisibleRowCount(4);
@@ -419,55 +546,137 @@ public class AlumnoView extends javax.swing.JFrame {
         jLabel8.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel8.setText("Notificaciones para ti");
 
-        jTextField1.setEditable(false);
-        jTextField1.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
-        jTextField1.setBorder(null);
-
         jLabel6.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel6.setText("Notificación");
+
+        jLabel13.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
+
+        jLabel14.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jLabel14.setForeground(new java.awt.Color(0, 0, 153));
+        jLabel14.setText("Mis Notificaciones");
+
+        jLabel15.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        jLabel15.setText("<html>Bienvenido a tus notificaciones!</br> Para ver la notificación en</br> la pantalla, haz click y aparecerá abajo</html>");
+
+        jTextPane1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        jScrollPane2.setViewportView(jTextPane1);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jTextField1)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel4))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 49, Short.MAX_VALUE)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel8))))
-                        .addGap(37, 37, 37))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel6)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addGap(24, 24, 24)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel13)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addComponent(jLabel14))))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(38, 38, 38)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 335, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
+                .addGap(43, 43, 43))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(4, 4, 4)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
-                    .addComponent(jScrollPane8))
-                .addContainerGap())
+                .addGap(27, 27, 27)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(4, 4, 4)
+                        .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel13)
+                        .addGap(10, 10, 10)
+                        .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane2)))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
 
         jTabbedPane4.addTab("Mis Notificaciones", jPanel1);
+
+        jPanel4.setBackground(new java.awt.Color(255, 255, 255));
+
+        tablaHorario.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        tablaHorario.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        tablaHorario.setRowHeight(40);
+        tablaHorario.setRowMargin(2);
+        tablaHorario.setRowSelectionAllowed(false);
+        tablaHorario.setShowGrid(true);
+        jscrollpanelhorarios.setViewportView(tablaHorario);
+
+        jLabel18.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
+
+        jLabel19.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jLabel19.setForeground(new java.awt.Color(0, 0, 153));
+        jLabel19.setText("Mi Horario");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(9, 9, 9)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jscrollpanelhorarios, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 795, Short.MAX_VALUE)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel18)
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addComponent(jLabel19)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addGap(27, 27, 27)
+                .addComponent(jLabel18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
+                .addComponent(jscrollpanelhorarios, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jTabbedPane4.addTab("Mi Horario", jPanel4);
 
         jPanel6.setBackground(new java.awt.Color(255, 255, 255));
         jPanel6.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -480,19 +689,22 @@ public class AlumnoView extends javax.swing.JFrame {
         jComboBox1.setBorder(null);
         jScrollPane1.setViewportView(jComboBox1);
 
-        jPanel6.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 70, 250, 50));
+        jPanel6.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 160, 240, 50));
 
-        jLabel9.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
+        jLabel9.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel9.setText("Notas");
         jPanel6.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 40, -1, 20));
 
-        jLabel10.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
-        jLabel10.setText("Asignaturas");
-        jPanel6.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 40, -1, 20));
+        jLabel10.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jLabel10.setForeground(new java.awt.Color(0, 0, 153));
+        jLabel10.setText("Mis Asignaturas");
+        jPanel6.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 90, -1, 20));
 
+        jScrollPane10.setBackground(new java.awt.Color(255, 255, 255));
         jScrollPane10.setBorder(null);
         jScrollPane10.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
 
+        tablaNotas.setAutoCreateRowSorter(true);
         tablaNotas.setFont(new java.awt.Font("Poppins", 0, 14)); // NOI18N
         tablaNotas.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -514,6 +726,8 @@ public class AlumnoView extends javax.swing.JFrame {
             }
         });
         tablaNotas.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        tablaNotas.setEditingColumn(0);
+        tablaNotas.setEditingRow(0);
         tablaNotas.setEnabled(false);
         tablaNotas.setIntercellSpacing(new java.awt.Dimension(0, 10));
         tablaNotas.setRowHeight(60);
@@ -523,27 +737,15 @@ public class AlumnoView extends javax.swing.JFrame {
 
         jPanel6.add(jScrollPane10, new org.netbeans.lib.awtextra.AbsoluteConstraints(298, 64, 456, 420));
 
-        jLabel11.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
+        jLabel11.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
         jLabel11.setText("Promedios");
-        jPanel6.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 160, 110, 20));
+        jPanel6.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 230, 110, 20));
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
-        jPanel6.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 420, -1, -1));
-
-        jScrollPane11.setBorder(null);
-        jScrollPane11.setFont(new java.awt.Font("Poppins", 0, 14)); // NOI18N
-
-        jTextArea1.setColumns(20);
-        jTextArea1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-        jTextArea1.setRows(5);
-        jTextArea1.setBorder(null);
-        jScrollPane11.setViewportView(jTextArea1);
-
-        jPanel6.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 200, 240, 280));
-        jPanel6.add(jLabel14, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 98, 255, 20));
+        jPanel6.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 410, -1, -1));
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
-        jPanel6.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 130, -1, -1));
+        jPanel6.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 20, -1, -1));
 
         DescargarNotas.setBackground(new java.awt.Color(0, 153, 102));
         DescargarNotas.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
@@ -559,17 +761,76 @@ public class AlumnoView extends javax.swing.JFrame {
         });
         jPanel6.add(DescargarNotas, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 500, 460, 30));
 
+        jLabel12.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jLabel12.setText("Asignaturas");
+        jPanel6.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 140, -1, 20));
+
+        jTextPane2.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        jScrollPane4.setViewportView(jTextPane2);
+
+        jPanel6.add(jScrollPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 260, 240, 210));
+
         jTabbedPane4.addTab("Mis Asignaturas", jPanel6);
+
+        jPanel3.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel16.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logoPeque.png"))); // NOI18N
+
+        jLabel17.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jLabel17.setForeground(new java.awt.Color(0, 0, 153));
+        jLabel17.setText("Mis Compañeros");
+
+        jScrollPane3.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        tablaAlumnos.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        tablaAlumnos.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(tablaAlumnos);
+
+        lblBienvenida1.setBackground(new java.awt.Color(255, 255, 255));
+        lblBienvenida1.setFont(new java.awt.Font("Poppins Medium", 3, 14)); // NOI18N
+        lblBienvenida1.setForeground(new java.awt.Color(255, 255, 255));
+        lblBienvenida1.setText("jLabel2");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 810, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel16)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel17)
+                                .addGap(18, 18, 18)
+                                .addComponent(lblBienvenida1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 734, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 565, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(32, 32, 32)
+                .addComponent(jLabel16)
+                .addGap(9, 9, 9)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblBienvenida1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         jTabbedPane4.addTab("Mis Compañeros", jPanel3);
@@ -693,10 +954,12 @@ public class AlumnoView extends javax.swing.JFrame {
 
                 for (int i = 0; i < modelo.getRowCount(); i++) {
                     String asignatura = (String) modelo.getValueAt(i, 0); // Columna Asignatura
-                    String nota = modelo.getValueAt(i, 1).toString();    // Columna Nota
+                    String ev = modelo.getValueAt(i, 1).toString();    // Columna 
+                    String nota = modelo.getValueAt(i, 2).toString();    // Columna Nota
+                    String peso = modelo.getValueAt(i, 3).toString();    // Columna Nota
 
                     // Obtener y convertir la fecha
-                    Object fechaObj = modelo.getValueAt(i, 2); // Columna Fecha
+                    Object fechaObj = modelo.getValueAt(i, 4); // Columna Fecha
                     String fechaFormateada;
                     if (fechaObj instanceof Date) {
                         fechaFormateada = dateFormat.format((Date) fechaObj);
@@ -706,7 +969,7 @@ public class AlumnoView extends javax.swing.JFrame {
                         throw new IllegalArgumentException("Formato de fecha desconocido en la tabla.");
                     }
 
-                    notas.add(new String[]{asignatura, nota, fechaFormateada});
+                    notas.add(new String[]{asignatura, ev,nota,peso, fechaFormateada});
                 }
 
                 // Generar el PDF
@@ -744,7 +1007,14 @@ public class AlumnoView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -756,26 +1026,34 @@ public class AlumnoView extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;
-    private javax.swing.JScrollPane jScrollPane11;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JScrollPane jScrollPane9;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane4;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JTextPane jTextPane2;
+    private javax.swing.JScrollPane jscrollpanelhorarios;
     private javax.swing.JLabel lblAsignaturas;
     private javax.swing.JLabel lblBienvenida;
     private javax.swing.JLabel lblBienvenida1;
     private javax.swing.JLabel lblBienvenida2;
+    private javax.swing.JLabel lblBienvenida3;
     private javax.swing.JList<String> listaNotificacionesGrupales;
     private javax.swing.JList<String> listaNotificacionesPersonal3;
     private javax.swing.JPanel mainPanel3;
+    private javax.swing.JTable tablaAlumnos;
+    private javax.swing.JTable tablaHorario;
     private javax.swing.JTable tablaNotas;
     private javax.swing.JPasswordField txtContrasena;
     private javax.swing.JPasswordField txtContrasena2;

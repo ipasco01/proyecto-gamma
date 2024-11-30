@@ -8,12 +8,19 @@ public class Asignatura {
     private int id;
     private String nombre;
     private int idProfesor;
+    private String nombreProfesor;
 
     // Constructor
     public Asignatura(int id, String nombre, int idProfesor) {
         this.id = id;
         this.nombre = nombre;
         this.idProfesor = idProfesor;
+    }
+    public Asignatura(int id, String nombre, int idProfesor, String nombreProfesor) {
+        this.id = id;
+        this.nombre = nombre;
+        this.idProfesor = idProfesor;
+        this.nombreProfesor = nombreProfesor;
     }
 
     // Getters y Setters
@@ -40,7 +47,8 @@ public class Asignatura {
     public void setIdProfesor(int idProfesor) {
         this.idProfesor = idProfesor;
     }
-
+     public String getNombreProfesor() { return nombreProfesor; }
+    public void setNombreProfesor(String nombreProfesor) { this.nombreProfesor = nombreProfesor; }
     // Método toString para imprimir los datos de Asignatura
     @Override
     public String toString() {

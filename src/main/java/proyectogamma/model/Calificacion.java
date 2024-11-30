@@ -15,6 +15,7 @@ public class Calificacion {
     private int idExamen;
     private String titulo;
     private double peso;
+    private String tituloAsignatura;
     
 
     // Constructor
@@ -33,6 +34,18 @@ public Calificacion(int id, String titulo, double nota, double peso, Date fecha)
     this.peso = peso;
     this.fecha = fecha;
 }
+
+public Calificacion(int id, int idAlumno, int idAsignatura, String tituloAsignatura, String tituloEvaluacion, double nota, double peso, Date fecha) {
+    this.id = id;
+    this.idAlumno = idAlumno;
+    this.idAsignatura = idAsignatura;   
+    this.titulo = tituloEvaluacion;
+    this.nota = nota;
+    this.peso = peso;
+    this.fecha = fecha;
+    this.tituloAsignatura = tituloAsignatura;
+}
+
 
     // Getters y Setters
     public int getId() {
@@ -75,6 +88,9 @@ public Calificacion(int id, String titulo, double nota, double peso, Date fecha)
         this.fecha = fecha;
     }
     public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo=titulo; }
+    public String getTituloAsignatura() { return tituloAsignatura; }
+    public void setTituloAsignatura(String tituloAsignatura) { this.tituloAsignatura=tituloAsignatura; }
     public double getPeso(){return peso;}
     public int getIdExamen() { return idExamen; }
 public void setIdExamen(int idExamen) { this.idExamen = idExamen; }

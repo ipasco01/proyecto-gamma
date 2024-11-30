@@ -112,43 +112,45 @@ public String obtenerNombreGrupoPorId(int idGrupo) {
     }
 
     // Método para agregar un nuevo grupo
-    public boolean agregarGrupo(Grupos grupo) {
-        String sql = "INSERT INTO grupos (nombre, descripcion, fecha_creacion) VALUES (?, ?, CURRENT_TIMESTAMP)";
+    public boolean agregarGrupo(String nombre, String descripcion) {
+    String sql = "INSERT INTO grupos (nombre, descripcion, fecha_creacion) VALUES (?, ?, CURRENT_TIMESTAMP)";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, grupo.getNombre());
-            pstmt.setString(2, grupo.getDescripcion());
+        pstmt.setString(1, nombre);
+        pstmt.setString(2, descripcion);
 
-            int rowsInserted = pstmt.executeUpdate();
-            return rowsInserted > 0;
+        int rowsInserted = pstmt.executeUpdate();
+        return rowsInserted > 0;
 
-        } catch (SQLException e) {
-            System.out.println("Error al agregar el grupo: " + e.getMessage());
-            return false;
-        }
+    } catch (SQLException e) {
+        System.out.println("Error al agregar grupo: " + e.getMessage());
+        return false;
     }
+}
+
 
     // Método para actualizar un grupo existente
-    public boolean actualizarGrupo(Grupos grupo) {
-        String sql = "UPDATE grupos SET nombre = ?, descripcion = ? WHERE id = ?";
+   public boolean modificarGrupo(int idGrupo, String nuevoNombre, String nuevaDescripcion) {
+    String sql = "UPDATE grupos SET nombre = ?, descripcion = ? WHERE id = ?";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, grupo.getNombre());
-            pstmt.setString(2, grupo.getDescripcion());
-            pstmt.setInt(3, grupo.getId());
+        pstmt.setString(1, nuevoNombre);
+        pstmt.setString(2, nuevaDescripcion);
+        pstmt.setInt(3, idGrupo);
 
-            int rowsUpdated = pstmt.executeUpdate();
-            return rowsUpdated > 0;
+        int rowsUpdated = pstmt.executeUpdate();
+        return rowsUpdated > 0;
 
-        } catch (SQLException e) {
-            System.out.println("Error al actualizar el grupo: " + e.getMessage());
-            return false;
-        }
+    } catch (SQLException e) {
+        System.out.println("Error al modificar grupo: " + e.getMessage());
+        return false;
     }
+}
+
 
     // Método para eliminar un grupo por ID
     public boolean eliminarGrupo(int id) {
