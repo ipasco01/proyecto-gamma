@@ -108,6 +108,7 @@ public class GrupoAsignaturaController {
         }
     }
 
+
     // Método para actualizar una asignación existente
     public boolean actualizarGrupoAsignatura(int idGrupo, int idAsignatura, int nuevoIdAsignatura) {
         String sql = "UPDATE grupo_asignaturas SET id_asignatura = ? WHERE id_grupo = ? AND id_asignatura = ?";
@@ -144,4 +145,76 @@ public class GrupoAsignaturaController {
             return false;
         }
     }
+
+    public List<GrupoAsignatura> obtenerAsignaturasConGrupo() {
+        String sql = """
+        SELECT a.id AS id_asignatura, 
+               a.nombre AS nombre_asignatura, 
+               CONCAT(d.nombre, ' ', d.apellido) AS nombreProfesor,
+               IFNULL(g.nombre, 'Sin Asignar') AS nombreGrupo
+        FROM asignatura a
+        LEFT JOIN docente d ON a.id_profesor = d.id
+        LEFT JOIN grupo_asignaturas ga ON a.id = ga.id_asignatura
+        LEFT JOIN grupos g ON ga.id_grupo = g.id
+        """;
+
+        List<GrupoAsignatura> lista = new ArrayList<>();
+
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                GrupoAsignatura grupoAsignatura = new GrupoAsignatura(
+                        rs.getInt("id_asignatura"),
+                        rs.getString("nombre_asignatura"),
+                        rs.getString("nombreProfesor"),
+                        rs.getString("nombreGrupo")
+                );
+                lista.add(grupoAsignatura);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener asignaturas con grupo: " + e.getMessage());
+        }
+
+        return lista;
+    }
+
+    public List<GrupoAsignatura> obtenerAsignaturasPorNombreDeGrupo(String nombreGrupo) {
+        String sql = """
+        SELECT a.id AS id_asignatura, 
+               a.nombre AS nombre_asignatura, 
+               CONCAT(d.nombre, ' ', d.apellido) AS nombreProfesor,
+               g.nombre AS nombreGrupo
+        FROM asignatura a
+        LEFT JOIN docente d ON a.id_profesor = d.id
+        JOIN grupo_asignaturas ga ON a.id = ga.id_asignatura
+        JOIN grupos g ON ga.id_grupo = g.id
+        WHERE g.nombre = ?
+        """;
+
+        List<GrupoAsignatura> lista = new ArrayList<>();
+
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, nombreGrupo);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    GrupoAsignatura grupoAsignatura = new GrupoAsignatura(
+                            rs.getInt("id_asignatura"),
+                            rs.getString("nombre_asignatura"),
+                            rs.getString("nombreProfesor"),
+                            rs.getString("nombreGrupo")
+                    );
+                    lista.add(grupoAsignatura);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener asignaturas por grupo: " + e.getMessage());
+        }
+
+        return lista;
+    }
+
 }

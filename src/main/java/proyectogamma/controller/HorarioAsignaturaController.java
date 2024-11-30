@@ -57,10 +57,11 @@ public class HorarioAsignaturaController {
 
    public List<HorarioAsignatura> obtenerHorariosPorGrupo(int idGrupo) {
         String sql = """
-                SELECT h.id, h.id_asignatura, h.dia, h.hora_inicio, h.hora_fin ,a.nombre AS nombreAsignatura
+                SELECT h.id, h.id_asignatura, h.dia, h.hora_inicio, h.hora_fin ,a.nombre AS nombreAsignatura,d.nombre AS nombreProfesor
                 FROM horarios_asignatura h 
                 JOIN grupo_asignaturas ga ON h.id_asignatura = ga.id_asignatura
                 JOIN asignatura a ON a.id=ga.id_asignatura
+                JOIN docente d ON d.id=a.id_profesor
                 WHERE ga.id_grupo = ?
                 """;
 
@@ -79,7 +80,8 @@ public class HorarioAsignaturaController {
                             rs.getString("dia"),
                             rs.getTime("hora_inicio"),
                             rs.getTime("hora_fin"),
-                            rs.getString("nombreAsignatura")
+                            rs.getString("nombreAsignatura"),
+                            rs.getString("nombreProfesor")
                     );
                     horarios.add(horario);
                 }
