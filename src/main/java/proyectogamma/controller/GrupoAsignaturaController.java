@@ -127,6 +127,24 @@ public class GrupoAsignaturaController {
             return false;
         }
     }
+    
+    public boolean actualizarGrupoAsignaturaPorGrupo(int idGrupo, int idAsignatura, int nuevoIdGrupo) {
+        String sql = "UPDATE grupo_asignaturas SET id_grupo = ? WHERE id_grupo = ? AND id_asignatura = ?";
+
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, nuevoIdGrupo);
+            pstmt.setInt(2, idGrupo);
+            pstmt.setInt(3, idAsignatura);
+
+            int rowsUpdated = pstmt.executeUpdate();
+            return rowsUpdated > 0;
+
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar GrupoAsignatura: " + e.getMessage());
+            return false;
+        }
+    }
 
     // Método para eliminar una asignación de GrupoAsignatura
     public boolean eliminarGrupoAsignatura(int idGrupo, int idAsignatura) {

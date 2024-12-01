@@ -17,39 +17,41 @@ import java.util.List;
 
 public class GrupoController {
 
-    // Método para obtener todos los grupos
     public List<Grupos> obtenerGrupos() {
-        List<Grupos> grupos = new ArrayList<>();
-        String sql = "SELECT * FROM grupos";
+    String sql = "SELECT id, nombre, descripcion, fecha_creacion FROM grupos";
+    List<Grupos> grupos = new ArrayList<>();
 
-        try (Connection conn = BaseDatos.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+    try (Connection conn = BaseDatos.getConnection();
+         Statement stmt = conn.createStatement();
+         ResultSet rs = stmt.executeQuery(sql)) {
 
-            while (rs.next()) {
-                Grupos grupo = new Grupos(
-                        rs.getInt("id"),
-                        rs.getString("nombre"),
-                        rs.getString("descripcion"),
-                        rs.getTimestamp("fecha_creacion")
-                );
-                grupos.add(grupo);
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error al obtener grupos: " + e.getMessage());
+        while (rs.next()) {
+            Grupos grupo = new Grupos(
+                    rs.getInt("id"),
+                    rs.getString("nombre"),
+                    rs.getString("descripcion"),
+                    rs.getTimestamp("fecha_creacion")
+            );
+            grupos.add(grupo);
         }
 
-        return grupos;
+    } catch (SQLException e) {
+        System.out.println("Error al obtener los grupos: " + e.getMessage());
     }
+
+    return grupos;
+}
+
    public Integer obtenerIdGrupoPorNombre(String nombreGrupo) {
     String sql = "SELECT id FROM grupos WHERE nombre = ?";
     try (Connection conn = BaseDatos.getConnection();
          PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
         pstmt.setString(1, nombreGrupo);
         ResultSet rs = pstmt.executeQuery();
+
         if (rs.next()) {
-            return rs.getInt("id");
+            return rs.getInt("id"); // Devuelve el ID del grupo
         } else {
             System.out.println("No se encontró el grupo con nombre: " + nombreGrupo);
             return null; // Retorna null si no se encuentra el grupo
@@ -59,6 +61,7 @@ public class GrupoController {
         return null; // Retorna null en caso de error
     }
 }
+
 
 public String obtenerNombreGrupoPorId(int idGrupo) {
     String sql = "SELECT nombre FROM grupos WHERE id = ?";

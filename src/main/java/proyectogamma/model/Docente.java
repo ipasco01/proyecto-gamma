@@ -7,6 +7,7 @@ package proyectogamma.model;
 import java.util.Date;
 
 public class Docente {
+
     private int id;
     private String nombre;
     private String apellido;
@@ -24,6 +25,13 @@ public class Docente {
         this.especialidad = especialidad;
         this.fechaContratacion = fechaContratacion;
         this.fechaRegistro = fechaRegistro;
+    }
+
+    public Docente(int id, String nombre, String apellido, String email) {
+        this.id = id;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
     }
 
     // Getters y Setters
@@ -86,14 +94,14 @@ public class Docente {
     // Método toString para imprimir los datos del Docente
     @Override
     public String toString() {
-        return "Docente{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", apellido='" + apellido + '\'' +
-                ", email='" + email + '\'' +
-                ", especialidad='" + especialidad + '\'' +
-                ", fechaContratacion=" + fechaContratacion +
-                ", fechaRegistro=" + fechaRegistro +
-                '}';
+        return "Docente{"
+                + "id=" + id
+                + ", nombre='" + nombre + '\''
+                + ", apellido='" + apellido + '\''
+                + ", email='" + email + '\''
+                + ", especialidad='" + especialidad + '\''
+                + ", fechaContratacion=" + fechaContratacion
+                + ", fechaRegistro=" + fechaRegistro
+                + '}';
     }
 }

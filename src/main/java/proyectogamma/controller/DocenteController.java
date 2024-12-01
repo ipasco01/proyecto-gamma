@@ -46,6 +46,29 @@ public class DocenteController {
         return docentes;
     }
 
+    public List<Docente> obtenerTodosLosProfesores() {
+        String sql = "SELECT id, nombre, apellido, email FROM docente";
+        List<Docente> docentes = new ArrayList<>();
+
+        try (Connection conn = BaseDatos.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Docente docente = new Docente(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("apellido"),
+                        rs.getString("email")
+                );
+                docentes.add(docente);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener los docentes: " + e.getMessage());
+        }
+
+        return docentes;
+    }
+
     public int obtenerIdProfesorPorNombre(String nombreCompleto) {
         String sql = "SELECT id FROM docente WHERE CONCAT(nombre, ' ', apellido) = ?";
         int idProfesor = -1;

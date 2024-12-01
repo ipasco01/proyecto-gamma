@@ -29,6 +29,14 @@ public class HorarioAsignatura {
         this.nombreAsignatura = nombreAsignatura;
         this.nombreProfesor = nombreProfesor;
     }
+    public HorarioAsignatura(int id, int idAsignatura, String dia, Time horaInicio, Time horaFin, String nombreAsignatura) {
+        this.id = id;
+        this.idAsignatura = idAsignatura;
+        this.dia = dia;
+        this.horaInicio = horaInicio;
+        this.horaFin = horaFin;
+        this.nombreAsignatura = nombreAsignatura;
+    }
 
     public HorarioAsignatura(int id, int idAsignatura, int idGrupo, int idProfesor, String dia, Time horaInicio, Time horaFin) {
         this.id = id;
@@ -39,6 +47,15 @@ public class HorarioAsignatura {
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
     }
+
+    public HorarioAsignatura(int id, String dia, Time horaInicio, Time horaFin) {
+         this.id = id;
+        this.dia = dia;
+        this.horaInicio = horaInicio;
+        this.horaFin = horaFin;
+    }
+
+    
 
     public void HorarioAsignatura(int id, int idAsignatura, String dia, Time horaInicio, Time horaFin, String nombreAsignatura, String nombreGrupo) {
         this.id = id;

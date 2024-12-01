@@ -93,6 +93,27 @@ public class AsignaturaController {
 
         return asignatura;
     }
+    public int obtenerIdAsignaturaPorNombre(String nombreAsignatura) {
+    String sql = "SELECT id FROM asignatura WHERE nombre = ?";
+    int idAsignatura = -1;
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+        pstmt.setString(1, nombreAsignatura);
+
+        try (ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                idAsignatura = rs.getInt("id");
+            }
+        }
+    } catch (SQLException e) {
+        System.out.println("Error al obtener el ID de la asignatura por nombre: " + e.getMessage());
+    }
+
+    return idAsignatura;
+}
+
 
     // Método para agregar una nueva asignatura
     public boolean agregarAsignatura(Asignatura asignatura) {
