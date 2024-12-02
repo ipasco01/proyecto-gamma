@@ -68,6 +68,13 @@ public class Alumno {
     public void setFechaNacimiento(Date fechaNacimiento) {
         this.fechaNacimiento = fechaNacimiento;
     }
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
 
     // Método toString para imprimir los datos del alumno
     @Override
@@ -80,5 +87,7 @@ public class Alumno {
                 ", fechaNacimiento=" + fechaNacimiento +
                 '}';
     }
+
+    
 }
 

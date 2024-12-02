@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package proyectogamma.controller;
+
 import proyectogamma.model.Usuario;
 import proyectogamma.model.BaseDatos;
 import proyectogamma.model.Alumno;
@@ -11,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import proyectogamma.model.Docente;
 
 /**
@@ -23,8 +25,7 @@ public class UsuarioController {
     public Usuario login(String nombreUsuario, String contrasena) {
         String sql = "SELECT * FROM usuario WHERE nombre_usuario = ? AND contrasena = ?";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, nombreUsuario);
             pstmt.setString(2, contrasena);
@@ -48,15 +49,14 @@ public class UsuarioController {
             System.out.println("Error al autenticar usuario: " + e.getMessage());
         }
 
-        return null; 
+        return null;
     }
 
     // Método para agregar un nuevo usuario
     public boolean agregarUsuario(Usuario usuario) {
         String sql = "INSERT INTO usuario (nombre_usuario, contrasena, rol, id_alumno, id_docente, id_padre) VALUES (?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, usuario.getNombreUsuario());
             pstmt.setString(2, usuario.getContrasena()); // En un sistema real, usa encriptación
@@ -78,8 +78,7 @@ public class UsuarioController {
     public boolean actualizarUsuario(Usuario usuario) {
         String sql = "UPDATE usuario SET nombre_usuario = ?, contrasena = ?, rol = ?, id_alumno = ?, id_docente = ?, id_padre = ? WHERE id = ?";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, usuario.getNombreUsuario());
             pstmt.setString(2, usuario.getContrasena());
@@ -102,8 +101,7 @@ public class UsuarioController {
     public boolean eliminarUsuario(int id) {
         String sql = "DELETE FROM usuario WHERE id = ?";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, id);
 
@@ -115,31 +113,30 @@ public class UsuarioController {
             return false;
         }
     }
+
     public boolean cambiarContrasena(int idUsuario, String nuevaContrasena) {
-    String sql = "UPDATE usuario SET contrasena = ? WHERE id = ?";
+        String sql = "UPDATE usuario SET contrasena = ? WHERE id = ?";
 
-    try (Connection conn = BaseDatos.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        // Encripta la contraseña antes de almacenarla (opcional)
-        pstmt.setString(1, nuevaContrasena);
-        pstmt.setInt(2, idUsuario);
+            // Encripta la contraseña antes de almacenarla (opcional)
+            pstmt.setString(1, nuevaContrasena);
+            pstmt.setInt(2, idUsuario);
 
-        int rowsUpdated = pstmt.executeUpdate();
-        return rowsUpdated > 0;
+            int rowsUpdated = pstmt.executeUpdate();
+            return rowsUpdated > 0;
 
-    } catch (SQLException e) {
-        System.out.println("Error al cambiar la contraseña: " + e.getMessage());
-        return false;
+        } catch (SQLException e) {
+            System.out.println("Error al cambiar la contraseña: " + e.getMessage());
+            return false;
+        }
     }
-}
 
     // Método para obtener un usuario por ID
     public Usuario obtenerUsuarioPorId(int id) {
         String sql = "SELECT * FROM usuario WHERE id = ?";
 
-        try (Connection conn = BaseDatos.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
@@ -162,77 +159,179 @@ public class UsuarioController {
 
         return null;
     }
+
     public Alumno obtenerAlumnoPorUsuario(Usuario usuario) {
-    String sql = """
+        String sql = """
         SELECT a.id, a.nombre, a.apellido, a.email, a.fecha_nacimiento, a.fecha_registro
         FROM usuario u
         JOIN alumno a ON u.id_alumno = a.id
         WHERE u.id = ?;
     """;
 
-    Alumno alumno = null;
+        Alumno alumno = null;
 
-    try (Connection conn = BaseDatos.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        pstmt.setInt(1, usuario.getId()); 
-        ResultSet rs = pstmt.executeQuery();
+            pstmt.setInt(1, usuario.getId());
+            ResultSet rs = pstmt.executeQuery();
 
-        if (rs.next()) {
-            alumno = new Alumno(
-                    rs.getInt("id"),
-                    rs.getString("nombre"),
-                    rs.getString("apellido"),
-                    rs.getString("email"),
-                    rs.getDate("fecha_nacimiento"),
-                    rs.getTimestamp("fecha_registro")
-            );
-        } else {
-            System.out.println("No se encontró un alumno asociado al usuario con ID: " + usuario.getId());
+            if (rs.next()) {
+                alumno = new Alumno(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("apellido"),
+                        rs.getString("email"),
+                        rs.getDate("fecha_nacimiento"),
+                        rs.getTimestamp("fecha_registro")
+                );
+            } else {
+                System.out.println("No se encontró un alumno asociado al usuario con ID: " + usuario.getId());
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener datos del alumno asociado: " + e.getMessage());
         }
 
-    } catch (SQLException e) {
-        System.out.println("Error al obtener datos del alumno asociado: " + e.getMessage());
+        return alumno;
     }
 
-    return alumno;
-}
-
-public Docente obtenerDocentePorUsuario(Usuario usuario) {
-    String sql = """
+    public Docente obtenerDocentePorUsuario(Usuario usuario) {
+        String sql = """
             SELECT a.id, a.nombre, a.apellido, a.email, a.especialidad, a.fecha_contratacion, a.fecha_registro
         FROM usuario u
         JOIN docente a ON u.id_docente = a.id
         WHERE u.id = ?;
     """;
 
-    Docente docente = null;
+        Docente docente = null;
+
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, usuario.getId());
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                docente = new Docente(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("apellido"),
+                        rs.getString("email"),
+                        rs.getString("especialidad"),
+                        rs.getDate("fecha_contratacion"),
+                        rs.getTimestamp("fecha_registro")
+                );
+            } else {
+                System.out.println("No se encontró un alumno asociado al usuario con ID: " + usuario.getId());
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al obtener datos del alumno asociado: " + e.getMessage());
+        }
+
+        return docente;
+    }
+
+    public boolean agregarDocente(Docente docente, String nombreUsuario, String contrasena) {
+    String sqlDocente = "INSERT INTO docente (nombre, apellido, email, especialidad, fecha_contratacion, fecha_registro) "
+            + "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+    String sqlUsuario = "INSERT INTO usuario (nombre_usuario, contrasena, rol, id_docente) VALUES (?, ?, ?, ?)";
+
+    Connection conn = null;
+    PreparedStatement pstmtDocente = null;
+    PreparedStatement pstmtUsuario = null;
+
+    try {
+        conn = BaseDatos.getConnection();
+        conn.setAutoCommit(false); // Iniciar transacción
+
+        // Insertar el docente
+        pstmtDocente = conn.prepareStatement(sqlDocente, Statement.RETURN_GENERATED_KEYS);
+        pstmtDocente.setString(1, docente.getNombre());
+        pstmtDocente.setString(2, docente.getApellido());
+        pstmtDocente.setString(3, docente.getEmail());
+        pstmtDocente.setString(4, docente.getEspecialidad());
+        pstmtDocente.setDate(5, new java.sql.Date(docente.getFechaContratacion().getTime()));
+        pstmtDocente.executeUpdate();
+
+        // Obtener el ID del docente recién insertado
+        ResultSet generatedKeys = pstmtDocente.getGeneratedKeys();
+        if (!generatedKeys.next()) {
+            throw new SQLException("No se pudo obtener el ID del docente.");
+        }
+        int idDocente = generatedKeys.getInt(1);
+
+        // Crear el usuario asociado al docente
+        pstmtUsuario = conn.prepareStatement(sqlUsuario);
+        pstmtUsuario.setString(1, nombreUsuario.toLowerCase().replace(" ", "") + "123");
+        pstmtUsuario.setString(2, contrasena);
+        pstmtUsuario.setString(3, "Docente");
+        pstmtUsuario.setInt(4, idDocente);
+        pstmtUsuario.executeUpdate();
+
+        conn.commit(); // Confirmar la transacción
+        return true;
+
+    } catch (SQLException e) {
+        System.out.println("Error al agregar docente y usuario: " + e.getMessage());
+        if (conn != null) {
+            try {
+                conn.rollback(); // Revertir la transacción en caso de error
+            } catch (SQLException rollbackEx) {
+                System.out.println("Error al hacer rollback: " + rollbackEx.getMessage());
+            }
+        }
+        return false;
+
+    } finally {
+        try {
+            if (pstmtDocente != null) {
+                pstmtDocente.close();
+            }
+            if (pstmtUsuario != null) {
+                pstmtUsuario.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        } catch (SQLException closeEx) {
+            System.out.println("Error al cerrar recursos: " + closeEx.getMessage());
+        }
+    }
+}
+
+
+    public boolean eliminarUsuarioPorIdDocente(int idDocente) {
+    String sql = "DELETE FROM usuario WHERE id_docente = ?";
 
     try (Connection conn = BaseDatos.getConnection();
          PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        pstmt.setInt(1, usuario.getId()); 
-        ResultSet rs = pstmt.executeQuery();
+        pstmt.setInt(1, idDocente);
 
-        if (rs.next()) {
-            docente = new Docente(
-                    rs.getInt("id"),
-                    rs.getString("nombre"),
-                    rs.getString("apellido"),
-                    rs.getString("email"),
-                    rs.getString("especialidad"),
-                    rs.getDate("fecha_contratacion"),
-                    rs.getTimestamp("fecha_registro")
-            );
-        } else {
-            System.out.println("No se encontró un alumno asociado al usuario con ID: " + usuario.getId());
-        }
+        int rowsDeleted = pstmt.executeUpdate();
+        return rowsDeleted > 0;
 
     } catch (SQLException e) {
-        System.out.println("Error al obtener datos del alumno asociado: " + e.getMessage());
+        System.out.println("Error al eliminar el usuario asociado: " + e.getMessage());
+        return false;
+    }
+}
+
+    public boolean eliminarUsuarioPorIdAlumno(int idAlumno) {
+         String sql = "DELETE FROM usuario WHERE id_alumno = ?";
+
+        try (Connection conn = BaseDatos.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idAlumno);
+
+            int rowsDeleted = pstmt.executeUpdate();
+            return rowsDeleted > 0;
+
+        } catch (SQLException e) {
+            System.out.println("Error al eliminar usuario: " + e.getMessage());
+            return false;
+        }
     }
 
-    return docente;
-}
 
 }

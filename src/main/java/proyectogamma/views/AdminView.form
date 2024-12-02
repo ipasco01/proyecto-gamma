@@ -1986,7 +1986,7 @@
                         <Property name="useNullLayout" type="boolean" value="false"/>
                       </Layout>
                       <SubComponents>
-                        <Container class="javax.swing.JTabbedPane" name="tabAlumnos2">
+                        <Container class="javax.swing.JTabbedPane" name="tabProfes">
                           <Properties>
                             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                               <Color blue="ff" green="ff" red="ff" type="rgb"/>
@@ -2026,42 +2026,35 @@
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
                                           <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                               <Group type="102" attributes="0">
-                                                  <Component id="jLabel35" min="-2" pref="77" max="-2" attributes="0"/>
-                                                  <EmptySpace max="32767" attributes="0"/>
+                                                  <Component id="AddNotaAlumno2" min="-2" pref="173" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="ModificarProfesor" min="-2" pref="173" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="EliminarProfe" max="32767" attributes="0"/>
                                               </Group>
-                                              <Group type="102" attributes="0">
-                                                  <Component id="jScrollPane8" min="-2" pref="357" max="-2" attributes="0"/>
-                                                  <EmptySpace pref="58" max="32767" attributes="0"/>
-                                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                                      <Component id="AddNotaAlumno2" alignment="0" max="32767" attributes="0"/>
-                                                      <Component id="ModificarNota2" alignment="0" pref="173" max="32767" attributes="0"/>
-                                                      <Component id="EliminarNota2" max="32767" attributes="0"/>
-                                                  </Group>
-                                                  <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
-                                              </Group>
+                                              <Component id="jLabel35" min="-2" pref="77" max="-2" attributes="0"/>
+                                              <Component id="jScrollPane8" min="-2" pref="607" max="-2" attributes="0"/>
                                           </Group>
+                                          <EmptySpace pref="25" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                                 </DimensionLayout>
                                 <DimensionLayout dim="1">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" attributes="0">
-                                          <EmptySpace max="32767" attributes="0"/>
-                                          <Component id="AddNotaAlumno2" min="-2" pref="33" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="ModificarNota2" min="-2" pref="33" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="EliminarNota2" min="-2" pref="33" max="-2" attributes="0"/>
-                                          <EmptySpace min="-2" pref="132" max="-2" attributes="0"/>
-                                      </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="jLabel35" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="jScrollPane8" min="-2" pref="533" max="-2" attributes="0"/>
-                                          <EmptySpace pref="89" max="32767" attributes="0"/>
+                                          <Component id="jScrollPane8" min="-2" pref="486" max="-2" attributes="0"/>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="AddNotaAlumno2" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
+                                              <Component id="ModificarProfesor" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
+                                              <Component id="EliminarProfe" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace pref="90" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                                 </DimensionLayout>
@@ -2096,7 +2089,7 @@
                                     </Component>
                                   </SubComponents>
                                 </Container>
-                                <Component class="javax.swing.JButton" name="EliminarNota2">
+                                <Component class="javax.swing.JButton" name="EliminarProfe">
                                   <Properties>
                                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                                       <Color blue="0" green="0" red="cc" type="rgb"/>
@@ -2117,10 +2110,10 @@
                                     </Property>
                                   </Properties>
                                   <Events>
-                                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="EliminarNota2ActionPerformed"/>
+                                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="EliminarProfeActionPerformed"/>
                                   </Events>
                                 </Component>
-                                <Component class="javax.swing.JButton" name="ModificarNota2">
+                                <Component class="javax.swing.JButton" name="ModificarProfesor">
                                   <Properties>
                                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                                       <Color blue="cc" green="0" red="0" type="rgb"/>
@@ -2141,7 +2134,7 @@
                                     </Property>
                                   </Properties>
                                   <Events>
-                                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ModificarNota2ActionPerformed"/>
+                                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ModificarProfesorActionPerformed"/>
                                   </Events>
                                 </Component>
                                 <Component class="javax.swing.JButton" name="AddNotaAlumno2">
@@ -2170,7 +2163,7 @@
                                 </Component>
                               </SubComponents>
                             </Container>
-                            <Container class="javax.swing.JPanel" name="agregarNota2">
+                            <Container class="javax.swing.JPanel" name="AddModifProfe">
                               <Properties>
                                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
@@ -2178,8 +2171,8 @@
                               </Properties>
                               <Constraints>
                                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                                  <JTabbedPaneConstraints tabName="Agregar Profesor">
-                                    <Property name="tabTitle" type="java.lang.String" value="Agregar Profesor"/>
+                                  <JTabbedPaneConstraints tabName="Editar o Agregar">
+                                    <Property name="tabTitle" type="java.lang.String" value="Editar o Agregar"/>
                                   </JTabbedPaneConstraints>
                                 </Constraint>
                               </Constraints>
@@ -2188,67 +2181,80 @@
                                 <DimensionLayout dim="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="1" attributes="0">
-                                          <EmptySpace pref="236" max="32767" attributes="0"/>
+                                          <EmptySpace pref="198" max="32767" attributes="0"/>
                                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                              <Component id="jLabel66" alignment="0" max="32767" attributes="0"/>
-                                              <Component id="txtTituloNota7" alignment="0" pref="216" max="32767" attributes="0"/>
-                                              <Component id="jLabel65" alignment="0" max="32767" attributes="0"/>
-                                              <Component id="txtTituloNota6" alignment="0" pref="216" max="32767" attributes="0"/>
-                                              <Component id="jLabel64" alignment="1" max="32767" attributes="0"/>
-                                              <Component id="guardarNota2" alignment="1" max="32767" attributes="0"/>
-                                              <Component id="jComboTituloNota2" alignment="0" max="32767" attributes="0"/>
                                               <Component id="jLabel67" alignment="0" max="32767" attributes="0"/>
-                                              <Component id="txtTituloNota8" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="txtEmailProfesor" alignment="0" pref="310" max="32767" attributes="0"/>
+                                              <Component id="jLabel66" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="txtApellidoProfesor" alignment="0" pref="310" max="32767" attributes="0"/>
+                                              <Component id="jLabel65" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="txtNombreProfesor" alignment="0" pref="310" max="32767" attributes="0"/>
+                                              <Component id="guardarNota2" alignment="1" max="32767" attributes="0"/>
+                                              <Component id="txtFechaContratacionProfesor" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="jLabel68" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="jLabel69" alignment="1" max="32767" attributes="0"/>
+                                              <Component id="txtEspecialidadProfesor" alignment="0" pref="310" max="32767" attributes="0"/>
+                                              <Component id="txtNombreUsuario" alignment="1" pref="310" max="32767" attributes="0"/>
+                                              <Component id="txtContrasenaP" alignment="1" pref="310" max="32767" attributes="0"/>
+                                              <Component id="jLabel70" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="jLabel71" alignment="0" max="32767" attributes="0"/>
                                               <Group type="102" alignment="0" attributes="0">
-                                                  <Component id="jLabel63" min="-2" pref="77" max="-2" attributes="0"/>
+                                                  <Component id="jLabel72" min="-2" pref="88" max="-2" attributes="0"/>
                                                   <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="jLabel10" max="32767" attributes="0"/>
+                                                  <Component id="txtIdProfesor" max="32767" attributes="0"/>
                                               </Group>
+                                              <Component id="modifyProf" alignment="0" max="32767" attributes="0"/>
                                           </Group>
-                                          <EmptySpace min="-2" pref="192" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="136" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                 </DimensionLayout>
                                 <DimensionLayout dim="1">
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
-                                          <EmptySpace min="-2" pref="77" max="-2" attributes="0"/>
-                                          <Component id="jLabel64" min="-2" pref="39" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="46" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="jLabel72" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="txtIdProfesor" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          </Group>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="jLabel65" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="txtTituloNota6" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace min="-2" max="-2" attributes="0"/>
-                                          <Component id="jLabel67" min="-2" max="-2" attributes="0"/>
+                                          <Component id="txtNombreProfesor" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="txtTituloNota8" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace min="-2" max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="3" attributes="0">
-                                              <Component id="jLabel63" alignment="3" min="-2" max="-2" attributes="0"/>
-                                              <Component id="jLabel10" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          </Group>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="jComboTituloNota2" min="-2" pref="30" max="-2" attributes="0"/>
-                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                           <Component id="jLabel66" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="txtTituloNota7" min="-2" max="-2" attributes="0"/>
+                                          <Component id="txtApellidoProfesor" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="jLabel68" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="txtEmailProfesor" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="jLabel69" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="txtEspecialidadProfesor" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="jLabel67" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="txtFechaContratacionProfesor" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="jLabel70" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="txtNombreUsuario" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="jLabel71" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="txtContrasenaP" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="modifyProf" min="-2" pref="33" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
                                           <Component id="guardarNota2" min="-2" pref="33" max="-2" attributes="0"/>
-                                          <EmptySpace pref="253" max="32767" attributes="0"/>
+                                          <EmptySpace pref="105" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                                 </DimensionLayout>
                               </Layout>
                               <SubComponents>
-                                <Component class="javax.swing.JLabel" name="jLabel63">
-                                  <Properties>
-                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                      <Font name="Poppins" size="12" style="1"/>
-                                    </Property>
-                                    <Property name="text" type="java.lang.String" value="Evaluaci&#xf3;n"/>
-                                  </Properties>
-                                </Component>
                                 <Component class="javax.swing.JButton" name="guardarNota2">
                                   <Properties>
                                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -2260,7 +2266,7 @@
                                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                                       <Color blue="ff" green="ff" red="ff" type="rgb"/>
                                     </Property>
-                                    <Property name="text" type="java.lang.String" value="Guardar Nota"/>
+                                    <Property name="text" type="java.lang.String" value="Guardar Profesor"/>
                                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                                       <Border info="null"/>
                                     </Property>
@@ -2272,34 +2278,15 @@
                                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="guardarNota2ActionPerformed"/>
                                   </Events>
                                 </Component>
-                                <Component class="javax.swing.JLabel" name="jLabel64">
-                                  <Properties>
-                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                      <Font name="Poppins" size="18" style="1"/>
-                                    </Property>
-                                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                                      <Color blue="cc" green="0" red="0" type="rgb"/>
-                                    </Property>
-                                    <Property name="text" type="java.lang.String" value="Agregar Nota"/>
-                                  </Properties>
-                                </Component>
                                 <Component class="javax.swing.JLabel" name="jLabel65">
                                   <Properties>
                                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                       <Font name="Poppins" size="12" style="1"/>
                                     </Property>
-                                    <Property name="text" type="java.lang.String" value="Alumno"/>
+                                    <Property name="text" type="java.lang.String" value="Nombre"/>
                                   </Properties>
                                 </Component>
-                                <Component class="javax.swing.JTextField" name="txtTituloNota6">
-                                  <Properties>
-                                    <Property name="editable" type="boolean" value="false"/>
-                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                      <Font name="Poppins" size="12" style="0"/>
-                                    </Property>
-                                  </Properties>
-                                </Component>
-                                <Component class="javax.swing.JTextField" name="txtTituloNota7">
+                                <Component class="javax.swing.JTextField" name="txtNombreProfesor">
                                   <Properties>
                                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                       <Font name="Poppins" size="12" style="0"/>
@@ -2311,50 +2298,140 @@
                                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                       <Font name="Poppins" size="12" style="1"/>
                                     </Property>
-                                    <Property name="text" type="java.lang.String" value="Nota"/>
+                                    <Property name="text" type="java.lang.String" value="Apellido"/>
                                   </Properties>
                                 </Component>
-                                <Component class="javax.swing.JComboBox" name="jComboTituloNota2">
+                                <Component class="javax.swing.JTextField" name="txtApellidoProfesor">
                                   <Properties>
                                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                       <Font name="Poppins" size="12" style="0"/>
                                     </Property>
-                                    <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                                      <StringArray count="4">
-                                        <StringItem index="0" value="Item 1"/>
-                                        <StringItem index="1" value="Item 2"/>
-                                        <StringItem index="2" value="Item 3"/>
-                                        <StringItem index="3" value="Item 4"/>
-                                      </StringArray>
-                                    </Property>
                                   </Properties>
-                                  <AuxValues>
-                                    <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
-                                  </AuxValues>
                                 </Component>
                                 <Component class="javax.swing.JLabel" name="jLabel67">
                                   <Properties>
                                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                       <Font name="Poppins" size="12" style="1"/>
                                     </Property>
-                                    <Property name="text" type="java.lang.String" value="Asignatura"/>
+                                    <Property name="text" type="java.lang.String" value="Fecha de Contrataci&#xf3;n"/>
                                   </Properties>
                                 </Component>
-                                <Component class="javax.swing.JTextField" name="txtTituloNota8">
+                                <Component class="javax.swing.JTextField" name="txtEmailProfesor">
+                                  <Properties>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="0"/>
+                                    </Property>
+                                  </Properties>
+                                </Component>
+                                <Component class="javax.swing.JFormattedTextField" name="txtFechaContratacionProfesor">
+                                  <Properties>
+                                    <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor">
+                                      <Format subtype="1" type="1"/>
+                                    </Property>
+                                    <Property name="toolTipText" type="java.lang.String" value="Dia/Mes/A&#xf1;o"/>
+                                  </Properties>
+                                </Component>
+                                <Component class="javax.swing.JLabel" name="jLabel68">
+                                  <Properties>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="1"/>
+                                    </Property>
+                                    <Property name="text" type="java.lang.String" value="Email"/>
+                                  </Properties>
+                                </Component>
+                                <Component class="javax.swing.JLabel" name="jLabel69">
+                                  <Properties>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="1"/>
+                                    </Property>
+                                    <Property name="text" type="java.lang.String" value="Especialidad "/>
+                                  </Properties>
+                                </Component>
+                                <Component class="javax.swing.JTextField" name="txtEspecialidadProfesor">
+                                  <Properties>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="0"/>
+                                    </Property>
+                                  </Properties>
+                                </Component>
+                                <Component class="javax.swing.JTextField" name="txtNombreUsuario">
+                                  <Properties>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="0"/>
+                                    </Property>
+                                  </Properties>
+                                </Component>
+                                <Component class="javax.swing.JTextField" name="txtContrasenaP">
+                                  <Properties>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="0"/>
+                                    </Property>
+                                  </Properties>
+                                </Component>
+                                <Component class="javax.swing.JLabel" name="jLabel70">
+                                  <Properties>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="1"/>
+                                    </Property>
+                                    <Property name="text" type="java.lang.String" value="Usuario"/>
+                                  </Properties>
+                                </Component>
+                                <Component class="javax.swing.JLabel" name="jLabel71">
+                                  <Properties>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="1"/>
+                                    </Property>
+                                    <Property name="text" type="java.lang.String" value="Contrase&#xf1;a"/>
+                                  </Properties>
+                                </Component>
+                                <Component class="javax.swing.JLabel" name="jLabel72">
+                                  <Properties>
+                                    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                                      <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                                    </Property>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="1"/>
+                                    </Property>
+                                    <Property name="text" type="java.lang.String" value="Id"/>
+                                  </Properties>
+                                </Component>
+                                <Component class="javax.swing.JTextField" name="txtIdProfesor">
                                   <Properties>
                                     <Property name="editable" type="boolean" value="false"/>
                                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                       <Font name="Poppins" size="12" style="0"/>
                                     </Property>
+                                    <Property name="caretColor" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                                      <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                                    </Property>
+                                    <Property name="disabledTextColor" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                                      <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                                    </Property>
+                                    <Property name="focusable" type="boolean" value="false"/>
                                   </Properties>
                                 </Component>
-                                <Component class="javax.swing.JLabel" name="jLabel10">
+                                <Component class="javax.swing.JButton" name="modifyProf">
                                   <Properties>
-                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                      <Font name="Poppins" size="12" style="0"/>
+                                    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                                      <Color blue="cc" green="0" red="0" type="rgb"/>
                                     </Property>
-                                    <Property name="text" type="java.lang.String" value="jLabel2"/>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="1"/>
+                                    </Property>
+                                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                                      <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                                    </Property>
+                                    <Property name="text" type="java.lang.String" value="Modificar Profesor"/>
+                                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                                      <Border info="null"/>
+                                    </Property>
+                                    <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
+                                      <Color id="Hand Cursor"/>
+                                    </Property>
                                   </Properties>
+                                  <Events>
+                                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="modifyProfActionPerformed"/>
+                                  </Events>
                                 </Component>
                               </SubComponents>
                             </Container>
@@ -2385,7 +2462,7 @@
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
                       <SubComponents>
-                        <Container class="javax.swing.JPanel" name="jPanel14">
+                        <Container class="javax.swing.JPanel" name="jPanel11">
                           <Properties>
                             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                               <Color blue="ff" green="ff" red="ff" type="rgb"/>
@@ -2393,8 +2470,8 @@
                           </Properties>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                              <JTabbedPaneConstraints tabName="Todos los Alumnos">
-                                <Property name="tabTitle" type="java.lang.String" value="Todos los Alumnos"/>
+                              <JTabbedPaneConstraints tabName="Alumnos">
+                                <Property name="tabTitle" type="java.lang.String" value="Alumnos"/>
                               </JTabbedPaneConstraints>
                             </Constraint>
                           </Constraints>
@@ -2402,127 +2479,37 @@
                           <Layout>
                             <DimensionLayout dim="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="jScrollPane7" alignment="0" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="1" attributes="0">
+                                          <Component id="jScrollPane3" alignment="1" pref="650" max="32767" attributes="0"/>
                                           <Group type="102" alignment="0" attributes="0">
-                                              <Component id="jLabel32" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                          </Group>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="DescargarCalificacionesAlumno" min="-2" pref="146" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="AddNotaAlumno1" min="-2" pref="31" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="ModificarNota1" pref="262" max="32767" attributes="0"/>
+                                              <Component id="ModificarNota1" min="-2" pref="248" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="EliminarNota1" min="-2" pref="178" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                             </DimensionLayout>
                             <DimensionLayout dim="1">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jLabel32" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jScrollPane7" min="-2" pref="422" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                                      <Component id="jScrollPane3" pref="488" max="32767" attributes="0"/>
+                                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="ModificarNota1" alignment="0" min="-2" pref="33" max="-2" attributes="0"/>
-                                          <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                                              <Component id="EliminarNota1" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
-                                              <Component id="DescargarCalificacionesAlumno" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
-                                              <Component id="AddNotaAlumno1" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
-                                          </Group>
+                                          <Component id="EliminarNota1" alignment="0" min="-2" pref="33" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace pref="82" max="32767" attributes="0"/>
+                                      <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                             </DimensionLayout>
                           </Layout>
                           <SubComponents>
-                            <Component class="javax.swing.JLabel" name="jLabel32">
-                              <Properties>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="1"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" value="Alumnos"/>
-                              </Properties>
-                            </Component>
-                            <Container class="javax.swing.JScrollPane" name="jScrollPane7">
-
-                              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-                              <SubComponents>
-                                <Component class="javax.swing.JTable" name="tablaCalificacionAlumno1">
-                                  <Properties>
-                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                      <Font name="Poppins" size="12" style="0"/>
-                                    </Property>
-                                    <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                                      <Table columnCount="4" rowCount="4">
-                                        <Column editable="true" title="Title 1" type="java.lang.Object"/>
-                                        <Column editable="true" title="Title 2" type="java.lang.Object"/>
-                                        <Column editable="true" title="Title 3" type="java.lang.Object"/>
-                                        <Column editable="true" title="Title 4" type="java.lang.Object"/>
-                                      </Table>
-                                    </Property>
-                                  </Properties>
-                                </Component>
-                              </SubComponents>
-                            </Container>
-                            <Component class="javax.swing.JButton" name="EliminarNota1">
-                              <Properties>
-                                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                                  <Color blue="0" green="0" red="cc" type="rgb"/>
-                                </Property>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="1"/>
-                                </Property>
-                                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" value="Eliminar Notas"/>
-                                <Property name="toolTipText" type="java.lang.String" value=""/>
-                                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                                  <Border info="null"/>
-                                </Property>
-                                <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                                  <Color id="Hand Cursor"/>
-                                </Property>
-                              </Properties>
-                              <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="EliminarNota1ActionPerformed"/>
-                              </Events>
-                            </Component>
-                            <Component class="javax.swing.JButton" name="DescargarCalificacionesAlumno">
-                              <Properties>
-                                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                                  <Color blue="0" green="66" red="cc" type="rgb"/>
-                                </Property>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="1"/>
-                                </Property>
-                                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" value="Descargar Notas"/>
-                                <Property name="toolTipText" type="java.lang.String" value=""/>
-                                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                                  <Border info="null"/>
-                                </Property>
-                                <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                                  <Color id="Hand Cursor"/>
-                                </Property>
-                              </Properties>
-                              <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="DescargarCalificacionesAlumnoActionPerformed"/>
-                              </Events>
-                            </Component>
                             <Component class="javax.swing.JButton" name="ModificarNota1">
                               <Properties>
                                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -2534,7 +2521,7 @@
                                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
                                 </Property>
-                                <Property name="text" type="java.lang.String" value="Modificar Notas"/>
+                                <Property name="text" type="java.lang.String" value="Modificar Alumno"/>
                                 <Property name="toolTipText" type="java.lang.String" value=""/>
                                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                                   <Border info="null"/>
@@ -2547,6 +2534,137 @@
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ModificarNota1ActionPerformed"/>
                               </Events>
                             </Component>
+                            <Component class="javax.swing.JButton" name="EliminarNota1">
+                              <Properties>
+                                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                                  <Color blue="0" green="0" red="cc" type="rgb"/>
+                                </Property>
+                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                  <Font name="Poppins" size="12" style="1"/>
+                                </Property>
+                                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                                </Property>
+                                <Property name="text" type="java.lang.String" value="Eliminar Alumno"/>
+                                <Property name="toolTipText" type="java.lang.String" value=""/>
+                                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                                  <Border info="null"/>
+                                </Property>
+                                <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
+                                  <Color id="Hand Cursor"/>
+                                </Property>
+                              </Properties>
+                              <Events>
+                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="EliminarNota1ActionPerformed"/>
+                              </Events>
+                            </Component>
+                            <Container class="javax.swing.JScrollPane" name="jScrollPane3">
+                              <Properties>
+                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                  <Font name="Poppins" size="12" style="0"/>
+                                </Property>
+                              </Properties>
+
+                              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                              <SubComponents>
+                                <Component class="javax.swing.JTable" name="TablaAlumnosTotales">
+                                  <Properties>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="0"/>
+                                    </Property>
+                                    <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
+                                      <Table columnCount="4" rowCount="4">
+                                        <Column editable="true" title="Title 1" type="java.lang.Object"/>
+                                        <Column editable="true" title="Title 2" type="java.lang.Object"/>
+                                        <Column editable="true" title="Title 3" type="java.lang.Object"/>
+                                        <Column editable="true" title="Title 4" type="java.lang.Object"/>
+                                      </Table>
+                                    </Property>
+                                    <Property name="rowHeight" type="int" value="30"/>
+                                  </Properties>
+                                </Component>
+                              </SubComponents>
+                            </Container>
+                          </SubComponents>
+                        </Container>
+                        <Container class="javax.swing.JPanel" name="jPanel14">
+                          <Properties>
+                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                              <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                            </Property>
+                          </Properties>
+                          <Constraints>
+                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                              <JTabbedPaneConstraints tabName="Agregar Alumnos">
+                                <Property name="tabTitle" type="java.lang.String" value="Agregar Alumnos"/>
+                              </JTabbedPaneConstraints>
+                            </Constraint>
+                          </Constraints>
+
+                          <Layout>
+                            <DimensionLayout dim="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="AddNotaAlumno3" max="32767" attributes="0"/>
+                                          <Component id="jScrollPane7" alignment="0" pref="644" max="32767" attributes="0"/>
+                                          <Group type="102" attributes="0">
+                                              <Component id="jLabel32" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="32767" attributes="0"/>
+                                              <Component id="comboBoxGrupos" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Component id="AddNotaAlumno1" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                            </DimensionLayout>
+                            <DimensionLayout dim="1">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="jLabel32" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="comboBoxGrupos" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="jScrollPane7" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="AddNotaAlumno1" min="-2" pref="33" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="AddNotaAlumno3" min="-2" pref="33" max="-2" attributes="0"/>
+                                      <EmptySpace pref="31" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                            </DimensionLayout>
+                          </Layout>
+                          <SubComponents>
+                            <Component class="javax.swing.JLabel" name="jLabel32">
+                              <Properties>
+                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                  <Font name="Poppins" size="12" style="1"/>
+                                </Property>
+                                <Property name="text" type="java.lang.String" value="Agregar Alumnos"/>
+                              </Properties>
+                            </Component>
+                            <Container class="javax.swing.JScrollPane" name="jScrollPane7">
+
+                              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+                              <SubComponents>
+                                <Component class="javax.swing.JTable" name="tablaAlumnosCargaMasiva">
+                                  <Properties>
+                                    <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+                                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                      <Font name="Poppins" size="12" style="0"/>
+                                    </Property>
+                                    <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                      <Connection component="tablaAlumnosCargaMasiva" name="columnModel" type="property"/>
+                                    </Property>
+                                  </Properties>
+                                </Component>
+                              </SubComponents>
+                            </Container>
                             <Component class="javax.swing.JButton" name="AddNotaAlumno1">
                               <Properties>
                                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -2571,99 +2689,19 @@
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="AddNotaAlumno1ActionPerformed"/>
                               </Events>
                             </Component>
-                          </SubComponents>
-                        </Container>
-                        <Container class="javax.swing.JPanel" name="agregarNota1">
-                          <Properties>
-                            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                              <Color blue="ff" green="ff" red="ff" type="rgb"/>
-                            </Property>
-                          </Properties>
-                          <Constraints>
-                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                              <JTabbedPaneConstraints tabName="Agregar Alumno">
-                                <Property name="tabTitle" type="java.lang.String" value="Agregar Alumno"/>
-                              </JTabbedPaneConstraints>
-                            </Constraint>
-                          </Constraints>
-
-                          <Layout>
-                            <DimensionLayout dim="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <EmptySpace pref="245" max="32767" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="jLabel55" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="txtTituloNota4" alignment="0" pref="216" max="32767" attributes="0"/>
-                                          <Component id="jLabel54" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="txtTituloNota2" alignment="0" pref="216" max="32767" attributes="0"/>
-                                          <Component id="jLabel53" alignment="1" max="32767" attributes="0"/>
-                                          <Component id="guardarNota1" alignment="1" max="32767" attributes="0"/>
-                                          <Component id="jComboTituloNota1" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="jLabel56" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="txtTituloNota5" alignment="0" max="32767" attributes="0"/>
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="jLabel43" min="-2" pref="77" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="jLabel9" max="32767" attributes="0"/>
-                                          </Group>
-                                      </Group>
-                                      <EmptySpace min="-2" pref="192" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                            </DimensionLayout>
-                            <DimensionLayout dim="1">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="77" max="-2" attributes="0"/>
-                                      <Component id="jLabel53" min="-2" pref="39" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jLabel54" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="txtTituloNota2" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel56" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="txtTituloNota5" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="jLabel43" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="jLabel9" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="jComboTituloNota1" min="-2" pref="30" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="jLabel55" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="txtTituloNota4" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
-                                      <Component id="guardarNota1" min="-2" pref="33" max="-2" attributes="0"/>
-                                      <EmptySpace pref="175" max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
-                            </DimensionLayout>
-                          </Layout>
-                          <SubComponents>
-                            <Component class="javax.swing.JLabel" name="jLabel43">
-                              <Properties>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="1"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" value="Evaluaci&#xf3;n"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JButton" name="guardarNota1">
+                            <Component class="javax.swing.JButton" name="AddNotaAlumno3">
                               <Properties>
                                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                                  <Color blue="cc" green="0" red="0" type="rgb"/>
+                                  <Color blue="0" green="0" red="99" type="rgb"/>
                                 </Property>
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="1"/>
+                                  <Font name="Poppins" size="18" style="1"/>
                                 </Property>
                                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
                                 </Property>
-                                <Property name="text" type="java.lang.String" value="Guardar Nota"/>
+                                <Property name="text" type="java.lang.String" value="Guardar Alumnos"/>
+                                <Property name="toolTipText" type="java.lang.String" value=""/>
                                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                                   <Border info="null"/>
                                 </Property>
@@ -2672,55 +2710,13 @@
                                 </Property>
                               </Properties>
                               <Events>
-                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="guardarNota1ActionPerformed"/>
+                                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="AddNotaAlumno3ActionPerformed"/>
                               </Events>
                             </Component>
-                            <Component class="javax.swing.JLabel" name="jLabel53">
+                            <Component class="javax.swing.JComboBox" name="comboBoxGrupos">
                               <Properties>
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="18" style="1"/>
-                                </Property>
-                                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                                  <Color blue="cc" green="0" red="0" type="rgb"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" value="Agregar Nota"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="jLabel54">
-                              <Properties>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="1"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" value="Alumno"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="txtTituloNota2">
-                              <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="0"/>
-                                </Property>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="txtTituloNota4">
-                              <Properties>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="0"/>
-                                </Property>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="jLabel55">
-                              <Properties>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="1"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" value="Nota"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JComboBox" name="jComboTituloNota1">
-                              <Properties>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="0"/>
+                                  <Font name="Poppins Medium" size="12" style="0"/>
                                 </Property>
                                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                                   <StringArray count="4">
@@ -2735,33 +2731,9 @@
                                 <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                               </AuxValues>
                             </Component>
-                            <Component class="javax.swing.JLabel" name="jLabel56">
-                              <Properties>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="1"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" value="Asignatura"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="txtTituloNota5">
-                              <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="0"/>
-                                </Property>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JLabel" name="jLabel9">
-                              <Properties>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="12" style="0"/>
-                                </Property>
-                                <Property name="text" type="java.lang.String" value="jLabel2"/>
-                              </Properties>
-                            </Component>
                           </SubComponents>
                         </Container>
-                        <Container class="javax.swing.JPanel" name="ModifNota1">
+                        <Container class="javax.swing.JPanel" name="jPanelModificarAlumno">
                           <Properties>
                             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                               <Color blue="ff" green="ff" red="ff" type="rgb"/>
@@ -2781,8 +2753,8 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="94" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="jLabel57" min="-2" pref="383" max="-2" attributes="0"/>
+                                          <Group type="102" attributes="0">
+                                              <Component id="comboBoxGrados1" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                           </Group>
                                           <Group type="102" alignment="0" attributes="0">
@@ -2792,26 +2764,26 @@
                                           <Group type="102" alignment="1" attributes="0">
                                               <Group type="103" groupAlignment="1" attributes="0">
                                                   <Group type="102" alignment="1" attributes="0">
-                                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                          <Component id="txtModifEval7" alignment="0" pref="191" max="32767" attributes="0"/>
-                                                          <Component id="jLabel60" alignment="0" max="32767" attributes="0"/>
-                                                      </Group>
+                                                      <Component id="jLabel57" min="-2" pref="303" max="-2" attributes="0"/>
+                                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                                      <Component id="jLabel61" max="32767" attributes="0"/>
                                                       <EmptySpace max="-2" attributes="0"/>
-                                                      <Group type="103" groupAlignment="0" attributes="0">
-                                                          <Component id="jLabel61" alignment="0" max="32767" attributes="0"/>
-                                                          <Component id="txtModifEval8" alignment="0" max="32767" attributes="0"/>
-                                                      </Group>
+                                                      <Component id="txtIdAlumno" min="-2" pref="72" max="-2" attributes="0"/>
                                                   </Group>
-                                                  <Component id="txtModifEval6" alignment="0" max="32767" attributes="0"/>
+                                                  <Group type="102" alignment="1" attributes="0">
+                                                      <Component id="jLabel60" min="-2" pref="191" max="-2" attributes="0"/>
+                                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                                  </Group>
+                                                  <Component id="txtEmailAlumno" alignment="0" max="32767" attributes="0"/>
                                                   <Group type="102" alignment="0" attributes="0">
                                                       <Group type="103" groupAlignment="0" attributes="0">
-                                                          <Component id="txtModifEval1" alignment="0" min="-2" pref="216" max="-2" attributes="0"/>
+                                                          <Component id="txtNombreAlumno" alignment="0" min="-2" pref="216" max="-2" attributes="0"/>
                                                           <Component id="jLabel58" alignment="0" min="-2" pref="177" max="-2" attributes="0"/>
                                                       </Group>
                                                       <EmptySpace max="-2" attributes="0"/>
                                                       <Group type="103" groupAlignment="0" attributes="0">
                                                           <Component id="jLabel62" alignment="0" max="32767" attributes="0"/>
-                                                          <Component id="txtModifEval9" alignment="0" pref="224" max="32767" attributes="0"/>
+                                                          <Component id="txtApellidoAlumno" alignment="0" pref="233" max="32767" attributes="0"/>
                                                       </Group>
                                                   </Group>
                                                   <Component id="EditNota1" alignment="0" max="32767" attributes="0"/>
@@ -2825,8 +2797,12 @@
                             <DimensionLayout dim="1">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="88" max="-2" attributes="0"/>
-                                      <Component id="jLabel57" min="-2" pref="39" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="166" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="jLabel57" alignment="3" min="-2" pref="39" max="-2" attributes="0"/>
+                                          <Component id="txtIdAlumno" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="jLabel61" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
                                       <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="3" attributes="0">
                                           <Component id="jLabel58" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -2834,26 +2810,20 @@
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="txtModifEval1" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="txtModifEval9" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="txtNombreAlumno" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="txtApellidoAlumno" alignment="3" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jLabel59" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="txtModifEval6" min="-2" max="-2" attributes="0"/>
+                                      <Component id="txtEmailAlumno" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="jLabel60" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="jLabel61" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
+                                      <Component id="jLabel60" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="txtModifEval7" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="txtModifEval8" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace pref="103" max="32767" attributes="0"/>
+                                      <Component id="comboBoxGrados1" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
                                       <Component id="EditNota1" min="-2" pref="33" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="120" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="216" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                             </DimensionLayout>
@@ -2870,7 +2840,7 @@
                                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
                                 </Property>
-                                <Property name="text" type="java.lang.String" value="Modificar Evaluaci&#xf3;n"/>
+                                <Property name="text" type="java.lang.String" value="Modificar"/>
                                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                                   <Border info="null"/>
                                 </Property>
@@ -2890,7 +2860,7 @@
                                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                                   <Color blue="cc" green="0" red="0" type="rgb"/>
                                 </Property>
-                                <Property name="text" type="java.lang.String" value="Editar o Eliminar Evaluaci&#xf3;n"/>
+                                <Property name="text" type="java.lang.String" value="Editar Alumno"/>
                               </Properties>
                             </Component>
                             <Component class="javax.swing.JLabel" name="jLabel58">
@@ -2898,12 +2868,11 @@
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                   <Font name="Poppins" size="12" style="1"/>
                                 </Property>
-                                <Property name="text" type="java.lang.String" value="Asignatura"/>
+                                <Property name="text" type="java.lang.String" value="Nombre"/>
                               </Properties>
                             </Component>
-                            <Component class="javax.swing.JTextField" name="txtModifEval1">
+                            <Component class="javax.swing.JTextField" name="txtNombreAlumno">
                               <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                   <Font name="Poppins" size="12" style="0"/>
                                 </Property>
@@ -2914,12 +2883,11 @@
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                   <Font name="Poppins" size="12" style="1"/>
                                 </Property>
-                                <Property name="text" type="java.lang.String" value="Evaluaci&#xf3;n"/>
+                                <Property name="text" type="java.lang.String" value="Correo"/>
                               </Properties>
                             </Component>
-                            <Component class="javax.swing.JTextField" name="txtModifEval6">
+                            <Component class="javax.swing.JTextField" name="txtEmailAlumno">
                               <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                   <Font name="Poppins" size="12" style="0"/>
                                 </Property>
@@ -2930,14 +2898,7 @@
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                   <Font name="Poppins" size="12" style="1"/>
                                 </Property>
-                                <Property name="text" type="java.lang.String" value="Nota"/>
-                              </Properties>
-                            </Component>
-                            <Component class="javax.swing.JTextField" name="txtModifEval7">
-                              <Properties>
-                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                                  <Font name="Poppins" size="14" style="1"/>
-                                </Property>
+                                <Property name="text" type="java.lang.String" value="Grupo"/>
                               </Properties>
                             </Component>
                             <Component class="javax.swing.JLabel" name="jLabel61">
@@ -2945,10 +2906,10 @@
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                   <Font name="Poppins" size="12" style="1"/>
                                 </Property>
-                                <Property name="text" type="java.lang.String" value="Peso"/>
+                                <Property name="text" type="java.lang.String" value="Id"/>
                               </Properties>
                             </Component>
-                            <Component class="javax.swing.JFormattedTextField" name="txtModifEval8">
+                            <Component class="javax.swing.JFormattedTextField" name="txtIdAlumno">
                               <Properties>
                                 <Property name="editable" type="boolean" value="false"/>
                                 <Property name="formatterFactory" type="javax.swing.JFormattedTextField$AbstractFormatterFactory" editor="org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor">
@@ -2965,16 +2926,29 @@
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                   <Font name="Poppins" size="12" style="1"/>
                                 </Property>
-                                <Property name="text" type="java.lang.String" value="Id"/>
+                                <Property name="text" type="java.lang.String" value="Apellidos"/>
                               </Properties>
                             </Component>
-                            <Component class="javax.swing.JTextField" name="txtModifEval9">
+                            <Component class="javax.swing.JTextField" name="txtApellidoAlumno">
                               <Properties>
-                                <Property name="editable" type="boolean" value="false"/>
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                   <Font name="Poppins" size="12" style="0"/>
                                 </Property>
                               </Properties>
+                            </Component>
+                            <Component class="javax.swing.JComboBox" name="comboBoxGrados1">
+                              <Properties>
+                                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                                  <Font name="Poppins Medium" size="12" style="0"/>
+                                </Property>
+                                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                                  <Connection component="comboBoxGrupos" name="model" type="property"/>
+                                </Property>
+                              </Properties>
+                              <AuxValues>
+                                <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="AdminView_comboBoxGrupos1"/>
+                                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+                              </AuxValues>
                             </Component>
                           </SubComponents>
                         </Container>

@@ -205,6 +205,59 @@ public class AlumnoController {
             }
         }
     }
+    public boolean agregarAlumnoConGrupo(Alumno alumno, int idGrupo) {
+    String sqlAlumno = "INSERT INTO alumno (nombre, apellido, email, fecha_nacimiento, fecha_registro) VALUES (?, ?, ?, NULL, CURRENT_TIMESTAMP)";
+    String sqlGrupo = "INSERT INTO alumno_grupos (id_alumno, id_grupo) VALUES (?, ?)";
+
+    try (Connection conn = BaseDatos.getConnection();
+         PreparedStatement pstmtAlumno = conn.prepareStatement(sqlAlumno, Statement.RETURN_GENERATED_KEYS);
+         PreparedStatement pstmtGrupo = conn.prepareStatement(sqlGrupo)) {
+
+        // Insertar alumno
+        pstmtAlumno.setString(1, alumno.getNombre());
+        pstmtAlumno.setString(2, alumno.getApellido());
+        pstmtAlumno.setString(3, alumno.getEmail());
+        int filasAlumno = pstmtAlumno.executeUpdate();
+
+        if (filasAlumno == 0) {
+            throw new SQLException("No se pudo insertar el alumno.");
+        }
+
+        // Obtener el ID del alumno recién insertado
+        ResultSet rs = pstmtAlumno.getGeneratedKeys();
+        if (!rs.next()) {
+            throw new SQLException("No se pudo obtener el ID del alumno.");
+        }
+        int idAlumno = rs.getInt(1);
+
+        // Asignar alumno al grupo
+        pstmtGrupo.setInt(1, idAlumno);
+        pstmtGrupo.setInt(2, idGrupo);
+        int filasGrupo = pstmtGrupo.executeUpdate();
+
+        if (filasGrupo == 0) {
+            throw new SQLException("No se pudo asignar el alumno al grupo.");
+        }
+
+        // Crear el usuario para el alumno
+        String nombreUsuario = alumno.getNombre().toLowerCase().replaceAll(" ", "") + alumno.getApellido().toLowerCase().replaceAll(" ", "");
+        String contrasena = nombreUsuario + "123";
+
+        UsuarioController usuarioController = new UsuarioController();
+        Usuario usuario = new Usuario(0, nombreUsuario, contrasena, "Alumno", idAlumno, null, null);
+
+        if (!usuarioController.agregarUsuario(usuario)) {
+            throw new SQLException("No se pudo crear el usuario para el alumno.");
+        }
+
+        return true;
+
+    } catch (SQLException e) {
+        System.out.println("Error al agregar alumno con grupo y usuario: " + e.getMessage());
+        return false;
+    }
+}
+
 
     public String obtenerNombreAlumnoPorId(int idAlumno) {
         String sql = "SELECT nombre, apellido FROM alumno WHERE id = ?";

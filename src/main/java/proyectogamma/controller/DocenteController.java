@@ -46,8 +46,8 @@ public class DocenteController {
         return docentes;
     }
 
-    public List<Docente> obtenerTodosLosProfesores() {
-        String sql = "SELECT id, nombre, apellido, email FROM docente";
+    public List<Docente> obtenerTodosLosDocentes() {
+        String sql = "SELECT * FROM docente";
         List<Docente> docentes = new ArrayList<>();
 
         try (Connection conn = BaseDatos.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
@@ -57,13 +57,16 @@ public class DocenteController {
                         rs.getInt("id"),
                         rs.getString("nombre"),
                         rs.getString("apellido"),
-                        rs.getString("email")
+                        rs.getString("email"),
+                        rs.getString("especialidad"),
+                        rs.getDate("fecha_contratacion"),
+                        rs.getTimestamp("fecha_registro")
                 );
                 docentes.add(docente);
             }
 
         } catch (SQLException e) {
-            System.out.println("Error al obtener los docentes: " + e.getMessage());
+            System.out.println("Error al obtener docentes: " + e.getMessage());
         }
 
         return docentes;

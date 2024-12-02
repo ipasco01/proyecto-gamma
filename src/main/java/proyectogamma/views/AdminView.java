@@ -6,20 +6,26 @@ package proyectogamma.views;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Time;
 import static java.sql.Types.NULL;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import proyectogamma.controller.AlumnoController;
 import proyectogamma.controller.AsignaturaController;
 import proyectogamma.controller.DocenteController;
 import proyectogamma.controller.GrupoAsignaturaController;
 import proyectogamma.controller.GrupoController;
 import proyectogamma.controller.HorarioAsignaturaController;
 import proyectogamma.controller.UsuarioController;
+import proyectogamma.model.Alumno;
 import proyectogamma.model.Asignatura;
 import proyectogamma.model.BaseDatos;
 import proyectogamma.model.Docente;
@@ -28,6 +34,8 @@ import proyectogamma.model.Grupos;
 import proyectogamma.model.HorarioAsignatura;
 import proyectogamma.model.Usuario;
 import proyectogamma.utils.PDFGenerator;
+import java.sql.ResultSet;
+import proyectogamma.controller.AlumnoGrupoController;
 
 /**
  *
@@ -50,6 +58,7 @@ public class AdminView extends javax.swing.JFrame {
             cargarAsignaturas();
             cargarProfesores();
             cargarProfesoresEnTabla();
+            cargarAlumnosEnTabla();
             tablaGrados.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
                     tablaGradosMouseClicked(evt);
@@ -71,6 +80,8 @@ public class AdminView extends javax.swing.JFrame {
 
                 }
             });
+            DefaultTableModel modeloTablaAlumnos = new DefaultTableModel(new String[]{"Nombre", "Apellido", "Email"}, 0);
+            tablaAlumnosCargaMasiva.setModel(modeloTablaAlumnos);
 
         } else {
             System.out.println("El usuario no tiene permisos de administrador.");
@@ -78,6 +89,52 @@ public class AdminView extends javax.swing.JFrame {
             dispose(); // Cierra la ventana si no tiene permisos
         }
 
+    }
+
+    private void cargarAlumnosEnTabla() {
+        // Crear el modelo de tabla con una nueva columna "Grupo"
+        DefaultTableModel model = new DefaultTableModel(
+                new String[]{"ID", "Nombre", "Apellido", "Email", "Fecha Nacimiento", "Fecha Registro", "Grupo"}, 0);
+
+        String sql = """
+            SELECT 
+                a.id, 
+                a.nombre, 
+                a.apellido, 
+                a.email, 
+                a.fecha_nacimiento, 
+                a.fecha_registro, 
+                g.nombre AS grupo 
+            FROM alumno a
+            LEFT JOIN alumno_grupos ag ON a.id = ag.id_alumno
+            LEFT JOIN grupos g ON ag.id_grupo = g.id
+            """;
+
+        try (Connection conn = BaseDatos.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+
+            // Llenar el modelo con los datos obtenidos
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                    rs.getInt("id"),
+                    rs.getString("nombre"),
+                    rs.getString("apellido"),
+                    rs.getString("email"),
+                    rs.getDate("fecha_nacimiento") != null
+                    ? new SimpleDateFormat("dd/MM/yyyy").format(rs.getDate("fecha_nacimiento"))
+                    : "N/A",
+                    rs.getTimestamp("fecha_registro") != null
+                    ? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(rs.getTimestamp("fecha_registro"))
+                    : "N/A",
+                    rs.getString("grupo") != null ? rs.getString("grupo") : "Sin grupo"
+                });
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al cargar alumnos: " + e.getMessage());
+        }
+
+        // Asignar el modelo a la tabla
+        TablaAlumnosTotales.setModel(model);
     }
 
     private void cargarGrados() {
@@ -151,6 +208,7 @@ public class AdminView extends javax.swing.JFrame {
         // Limpiar los ComboBox
         jComboBoxGrupos.removeAllItems();
         jComboBoxGrupos2.removeAllItems();
+        comboBoxGrupos.removeAllItems();
 
         // Agregar elementos por defecto
         jComboBoxGrupos.addItem("Todos");
@@ -160,24 +218,29 @@ public class AdminView extends javax.swing.JFrame {
             System.out.println("Agregando grupo: " + grupo.getNombre());
             jComboBoxGrupos.addItem(grupo.getNombre());
             jComboBoxGrupos2.addItem(grupo.getNombre());
+            comboBoxGrupos.addItem(grupo.getNombre());
         }
     }
 
     private void cargarProfesoresEnTabla() {
         DocenteController docenteController = new DocenteController();
-        List<Docente> docentes = docenteController.obtenerTodosLosProfesores();
+        List<Docente> docentes = docenteController.obtenerTodosLosDocentes();
 
-        DefaultTableModel model = new DefaultTableModel(new String[]{"ID", "Nombre", "Apellido", "Email"}, 0);
+        // Crear el modelo para la tabla
+        DefaultTableModel model = new DefaultTableModel(new String[]{"ID", "Nombre", "Apellido", "Email", "Especialidad", "Fecha Contratación"}, 0);
 
         for (Docente docente : docentes) {
             model.addRow(new Object[]{
                 docente.getId(),
                 docente.getNombre(),
                 docente.getApellido(),
-                docente.getEmail()
+                docente.getEmail(),
+                docente.getEspecialidad(),
+                new SimpleDateFormat("yyyy-MM-dd").format(docente.getFechaContratacion())
             });
         }
 
+        // Asignar el modelo a la tabla
         tablaProfesores.setModel(model);
     }
 
@@ -262,7 +325,6 @@ public class AdminView extends javax.swing.JFrame {
 
     private void cargarHorariosDeAsignatura(int idClase) {
         HorarioAsignaturaController horarioController = new HorarioAsignaturaController();
-       
 
         // Obtener ID de la asignatura
         int idAsignatura = idClase;
@@ -402,60 +464,59 @@ public class AdminView extends javax.swing.JFrame {
         btnModificarHorario = new javax.swing.JButton();
         btnEliminarHorario = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
-        tabAlumnos2 = new javax.swing.JTabbedPane();
+        tabProfes = new javax.swing.JTabbedPane();
         jPanel15 = new javax.swing.JPanel();
         jLabel35 = new javax.swing.JLabel();
         jScrollPane8 = new javax.swing.JScrollPane();
         tablaProfesores = new javax.swing.JTable();
-        EliminarNota2 = new javax.swing.JButton();
-        ModificarNota2 = new javax.swing.JButton();
+        EliminarProfe = new javax.swing.JButton();
+        ModificarProfesor = new javax.swing.JButton();
         AddNotaAlumno2 = new javax.swing.JButton();
-        agregarNota2 = new javax.swing.JPanel();
-        jLabel63 = new javax.swing.JLabel();
+        AddModifProfe = new javax.swing.JPanel();
         guardarNota2 = new javax.swing.JButton();
-        jLabel64 = new javax.swing.JLabel();
         jLabel65 = new javax.swing.JLabel();
-        txtTituloNota6 = new javax.swing.JTextField();
-        txtTituloNota7 = new javax.swing.JTextField();
+        txtNombreProfesor = new javax.swing.JTextField();
         jLabel66 = new javax.swing.JLabel();
-        jComboTituloNota2 = new javax.swing.JComboBox<>();
+        txtApellidoProfesor = new javax.swing.JTextField();
         jLabel67 = new javax.swing.JLabel();
-        txtTituloNota8 = new javax.swing.JTextField();
-        jLabel10 = new javax.swing.JLabel();
+        txtEmailProfesor = new javax.swing.JTextField();
+        txtFechaContratacionProfesor = new javax.swing.JFormattedTextField();
+        jLabel68 = new javax.swing.JLabel();
+        jLabel69 = new javax.swing.JLabel();
+        txtEspecialidadProfesor = new javax.swing.JTextField();
+        txtNombreUsuario = new javax.swing.JTextField();
+        txtContrasenaP = new javax.swing.JTextField();
+        jLabel70 = new javax.swing.JLabel();
+        jLabel71 = new javax.swing.JLabel();
+        jLabel72 = new javax.swing.JLabel();
+        txtIdProfesor = new javax.swing.JTextField();
+        modifyProf = new javax.swing.JButton();
         tabAlumnos1 = new javax.swing.JTabbedPane();
+        jPanel11 = new javax.swing.JPanel();
+        ModificarNota1 = new javax.swing.JButton();
+        EliminarNota1 = new javax.swing.JButton();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        TablaAlumnosTotales = new javax.swing.JTable();
         jPanel14 = new javax.swing.JPanel();
         jLabel32 = new javax.swing.JLabel();
         jScrollPane7 = new javax.swing.JScrollPane();
-        tablaCalificacionAlumno1 = new javax.swing.JTable();
-        EliminarNota1 = new javax.swing.JButton();
-        DescargarCalificacionesAlumno = new javax.swing.JButton();
-        ModificarNota1 = new javax.swing.JButton();
+        tablaAlumnosCargaMasiva = new javax.swing.JTable();
         AddNotaAlumno1 = new javax.swing.JButton();
-        agregarNota1 = new javax.swing.JPanel();
-        jLabel43 = new javax.swing.JLabel();
-        guardarNota1 = new javax.swing.JButton();
-        jLabel53 = new javax.swing.JLabel();
-        jLabel54 = new javax.swing.JLabel();
-        txtTituloNota2 = new javax.swing.JTextField();
-        txtTituloNota4 = new javax.swing.JTextField();
-        jLabel55 = new javax.swing.JLabel();
-        jComboTituloNota1 = new javax.swing.JComboBox<>();
-        jLabel56 = new javax.swing.JLabel();
-        txtTituloNota5 = new javax.swing.JTextField();
-        jLabel9 = new javax.swing.JLabel();
-        ModifNota1 = new javax.swing.JPanel();
+        AddNotaAlumno3 = new javax.swing.JButton();
+        comboBoxGrupos = new javax.swing.JComboBox<>();
+        jPanelModificarAlumno = new javax.swing.JPanel();
         EditNota1 = new javax.swing.JButton();
         jLabel57 = new javax.swing.JLabel();
         jLabel58 = new javax.swing.JLabel();
-        txtModifEval1 = new javax.swing.JTextField();
+        txtNombreAlumno = new javax.swing.JTextField();
         jLabel59 = new javax.swing.JLabel();
-        txtModifEval6 = new javax.swing.JTextField();
+        txtEmailAlumno = new javax.swing.JTextField();
         jLabel60 = new javax.swing.JLabel();
-        txtModifEval7 = new javax.swing.JTextField();
         jLabel61 = new javax.swing.JLabel();
-        txtModifEval8 = new javax.swing.JFormattedTextField();
+        txtIdAlumno = new javax.swing.JFormattedTextField();
         jLabel62 = new javax.swing.JLabel();
-        txtModifEval9 = new javax.swing.JTextField();
+        txtApellidoAlumno = new javax.swing.JTextField();
+        comboBoxGrados1 = new javax.swing.JComboBox<>();
         jPanel7 = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jPanel12 = new javax.swing.JPanel();
@@ -1488,10 +1549,10 @@ public class AdminView extends javax.swing.JFrame {
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        tabAlumnos2.setBackground(new java.awt.Color(255, 255, 255));
-        tabAlumnos2.setForeground(new java.awt.Color(0, 0, 153));
-        tabAlumnos2.setTabPlacement(javax.swing.JTabbedPane.LEFT);
-        tabAlumnos2.setFont(new java.awt.Font("Poppins SemiBold", 0, 12)); // NOI18N
+        tabProfes.setBackground(new java.awt.Color(255, 255, 255));
+        tabProfes.setForeground(new java.awt.Color(0, 0, 153));
+        tabProfes.setTabPlacement(javax.swing.JTabbedPane.LEFT);
+        tabProfes.setFont(new java.awt.Font("Poppins SemiBold", 0, 12)); // NOI18N
 
         jPanel15.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -1512,29 +1573,29 @@ public class AdminView extends javax.swing.JFrame {
         ));
         jScrollPane8.setViewportView(tablaProfesores);
 
-        EliminarNota2.setBackground(new java.awt.Color(204, 0, 0));
-        EliminarNota2.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        EliminarNota2.setForeground(new java.awt.Color(255, 255, 255));
-        EliminarNota2.setText("Eliminar Profesor");
-        EliminarNota2.setToolTipText("");
-        EliminarNota2.setBorder(null);
-        EliminarNota2.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        EliminarNota2.addActionListener(new java.awt.event.ActionListener() {
+        EliminarProfe.setBackground(new java.awt.Color(204, 0, 0));
+        EliminarProfe.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        EliminarProfe.setForeground(new java.awt.Color(255, 255, 255));
+        EliminarProfe.setText("Eliminar Profesor");
+        EliminarProfe.setToolTipText("");
+        EliminarProfe.setBorder(null);
+        EliminarProfe.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        EliminarProfe.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                EliminarNota2ActionPerformed(evt);
+                EliminarProfeActionPerformed(evt);
             }
         });
 
-        ModificarNota2.setBackground(new java.awt.Color(0, 0, 204));
-        ModificarNota2.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        ModificarNota2.setForeground(new java.awt.Color(255, 255, 255));
-        ModificarNota2.setText("Modificar Profesor");
-        ModificarNota2.setToolTipText("");
-        ModificarNota2.setBorder(null);
-        ModificarNota2.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        ModificarNota2.addActionListener(new java.awt.event.ActionListener() {
+        ModificarProfesor.setBackground(new java.awt.Color(0, 0, 204));
+        ModificarProfesor.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        ModificarProfesor.setForeground(new java.awt.Color(255, 255, 255));
+        ModificarProfesor.setText("Modificar Profesor");
+        ModificarProfesor.setToolTipText("");
+        ModificarProfesor.setBorder(null);
+        ModificarProfesor.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        ModificarProfesor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ModificarNota2ActionPerformed(evt);
+                ModificarProfesorActionPerformed(evt);
             }
         });
 
@@ -1557,48 +1618,40 @@ public class AdminView extends javax.swing.JFrame {
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel15Layout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel15Layout.createSequentialGroup()
-                        .addComponent(jLabel35, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel15Layout.createSequentialGroup()
-                        .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 357, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
-                        .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(AddNotaAlumno2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(ModificarNota2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
-                            .addComponent(EliminarNota2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(44, 44, 44))))
+                        .addComponent(AddNotaAlumno2, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ModificarProfesor, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(EliminarProfe, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel35, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 607, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
         jPanel15Layout.setVerticalGroup(
             jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel15Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(AddNotaAlumno2, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ModificarNota2, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(EliminarNota2, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(132, 132, 132))
-            .addGroup(jPanel15Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel35)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 533, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(89, Short.MAX_VALUE))
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 486, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(AddNotaAlumno2, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ModificarProfesor, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(EliminarProfe, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(90, Short.MAX_VALUE))
         );
 
-        tabAlumnos2.addTab("Todos los Profesores", jPanel15);
+        tabProfes.addTab("Todos los Profesores", jPanel15);
 
-        agregarNota2.setBackground(new java.awt.Color(255, 255, 255));
-
-        jLabel63.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel63.setText("Evaluación");
+        AddModifProfe.setBackground(new java.awt.Color(255, 255, 255));
 
         guardarNota2.setBackground(new java.awt.Color(0, 0, 204));
         guardarNota2.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
         guardarNota2.setForeground(new java.awt.Color(255, 255, 255));
-        guardarNota2.setText("Guardar Nota");
+        guardarNota2.setText("Guardar Profesor");
         guardarNota2.setBorder(null);
         guardarNota2.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         guardarNota2.addActionListener(new java.awt.event.ActionListener() {
@@ -1607,86 +1660,138 @@ public class AdminView extends javax.swing.JFrame {
             }
         });
 
-        jLabel64.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
-        jLabel64.setForeground(new java.awt.Color(0, 0, 204));
-        jLabel64.setText("Agregar Nota");
-
         jLabel65.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel65.setText("Alumno");
+        jLabel65.setText("Nombre");
 
-        txtTituloNota6.setEditable(false);
-        txtTituloNota6.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-
-        txtTituloNota7.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtNombreProfesor.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
 
         jLabel66.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel66.setText("Nota");
+        jLabel66.setText("Apellido");
 
-        jComboTituloNota2.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-        jComboTituloNota2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        txtApellidoProfesor.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
 
         jLabel67.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel67.setText("Asignatura");
+        jLabel67.setText("Fecha de Contratación");
 
-        txtTituloNota8.setEditable(false);
-        txtTituloNota8.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtEmailProfesor.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
 
-        jLabel10.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-        jLabel10.setText("jLabel2");
+        txtFechaContratacionProfesor.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT))));
+        txtFechaContratacionProfesor.setToolTipText("Dia/Mes/Año");
 
-        javax.swing.GroupLayout agregarNota2Layout = new javax.swing.GroupLayout(agregarNota2);
-        agregarNota2.setLayout(agregarNota2Layout);
-        agregarNota2Layout.setHorizontalGroup(
-            agregarNota2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, agregarNota2Layout.createSequentialGroup()
-                .addContainerGap(236, Short.MAX_VALUE)
-                .addGroup(agregarNota2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel66, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtTituloNota7, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                    .addComponent(jLabel65, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtTituloNota6, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                    .addComponent(jLabel64, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(guardarNota2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jComboTituloNota2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        jLabel68.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel68.setText("Email");
+
+        jLabel69.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel69.setText("Especialidad ");
+
+        txtEspecialidadProfesor.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        txtNombreUsuario.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        txtContrasenaP.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        jLabel70.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel70.setText("Usuario");
+
+        jLabel71.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel71.setText("Contraseña");
+
+        jLabel72.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel72.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel72.setText("Id");
+
+        txtIdProfesor.setEditable(false);
+        txtIdProfesor.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtIdProfesor.setCaretColor(new java.awt.Color(255, 255, 255));
+        txtIdProfesor.setDisabledTextColor(new java.awt.Color(204, 204, 204));
+        txtIdProfesor.setFocusable(false);
+
+        modifyProf.setBackground(new java.awt.Color(0, 0, 204));
+        modifyProf.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        modifyProf.setForeground(new java.awt.Color(255, 255, 255));
+        modifyProf.setText("Modificar Profesor");
+        modifyProf.setBorder(null);
+        modifyProf.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        modifyProf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                modifyProfActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout AddModifProfeLayout = new javax.swing.GroupLayout(AddModifProfe);
+        AddModifProfe.setLayout(AddModifProfeLayout);
+        AddModifProfeLayout.setHorizontalGroup(
+            AddModifProfeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, AddModifProfeLayout.createSequentialGroup()
+                .addContainerGap(198, Short.MAX_VALUE)
+                .addGroup(AddModifProfeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel67, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtTituloNota8)
-                    .addGroup(agregarNota2Layout.createSequentialGroup()
-                        .addComponent(jLabel63, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtEmailProfesor, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                    .addComponent(jLabel66, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtApellidoProfesor, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                    .addComponent(jLabel65, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtNombreProfesor, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                    .addComponent(guardarNota2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtFechaContratacionProfesor)
+                    .addComponent(jLabel68, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel69, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtEspecialidadProfesor, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                    .addComponent(txtNombreUsuario, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                    .addComponent(txtContrasenaP, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                    .addComponent(jLabel70, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel71, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(AddModifProfeLayout.createSequentialGroup()
+                        .addComponent(jLabel72, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addGap(192, 192, 192))
+                        .addComponent(txtIdProfesor))
+                    .addComponent(modifyProf, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(136, 136, 136))
         );
-        agregarNota2Layout.setVerticalGroup(
-            agregarNota2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(agregarNota2Layout.createSequentialGroup()
-                .addGap(77, 77, 77)
-                .addComponent(jLabel64, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+        AddModifProfeLayout.setVerticalGroup(
+            AddModifProfeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(AddModifProfeLayout.createSequentialGroup()
+                .addGap(46, 46, 46)
+                .addGroup(AddModifProfeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel72)
+                    .addComponent(txtIdProfesor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel65)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtTituloNota6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtNombreProfesor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel66)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtApellidoProfesor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel68)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtEmailProfesor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel69)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtEspecialidadProfesor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel67)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtTituloNota8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtFechaContratacionProfesor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(agregarNota2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel63)
-                    .addComponent(jLabel10))
+                .addComponent(jLabel70)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboTituloNota2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel66)
+                .addComponent(txtNombreUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtTituloNota7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel71)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtContrasenaP, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(16, 16, 16)
+                .addComponent(modifyProf, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(guardarNota2, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(253, Short.MAX_VALUE))
+                .addContainerGap(105, Short.MAX_VALUE))
         );
 
-        tabAlumnos2.addTab("Agregar Profesor", agregarNota2);
+        tabProfes.addTab("Editar o Agregar", AddModifProfe);
 
-        jPanel2.add(tabAlumnos2, new org.netbeans.lib.awtextra.AbsoluteConstraints(5, 0, 800, -1));
+        jPanel2.add(tabProfes, new org.netbeans.lib.awtextra.AbsoluteConstraints(5, 0, 800, -1));
 
         jTabbedPane4.addTab("Profesores", jPanel2);
 
@@ -1695,13 +1800,38 @@ public class AdminView extends javax.swing.JFrame {
         tabAlumnos1.setTabPlacement(javax.swing.JTabbedPane.LEFT);
         tabAlumnos1.setFont(new java.awt.Font("Poppins SemiBold", 0, 12)); // NOI18N
 
-        jPanel14.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel11.setBackground(new java.awt.Color(255, 255, 255));
 
-        jLabel32.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel32.setText("Alumnos");
+        ModificarNota1.setBackground(new java.awt.Color(0, 0, 204));
+        ModificarNota1.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        ModificarNota1.setForeground(new java.awt.Color(255, 255, 255));
+        ModificarNota1.setText("Modificar Alumno");
+        ModificarNota1.setToolTipText("");
+        ModificarNota1.setBorder(null);
+        ModificarNota1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        ModificarNota1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ModificarNota1ActionPerformed(evt);
+            }
+        });
 
-        tablaCalificacionAlumno1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-        tablaCalificacionAlumno1.setModel(new javax.swing.table.DefaultTableModel(
+        EliminarNota1.setBackground(new java.awt.Color(204, 0, 0));
+        EliminarNota1.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        EliminarNota1.setForeground(new java.awt.Color(255, 255, 255));
+        EliminarNota1.setText("Eliminar Alumno");
+        EliminarNota1.setToolTipText("");
+        EliminarNota1.setBorder(null);
+        EliminarNota1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        EliminarNota1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                EliminarNota1ActionPerformed(evt);
+            }
+        });
+
+        jScrollPane3.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        TablaAlumnosTotales.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        TablaAlumnosTotales.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -1712,46 +1842,47 @@ public class AdminView extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane7.setViewportView(tablaCalificacionAlumno1);
+        TablaAlumnosTotales.setRowHeight(30);
+        jScrollPane3.setViewportView(TablaAlumnosTotales);
 
-        EliminarNota1.setBackground(new java.awt.Color(204, 0, 0));
-        EliminarNota1.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        EliminarNota1.setForeground(new java.awt.Color(255, 255, 255));
-        EliminarNota1.setText("Eliminar Notas");
-        EliminarNota1.setToolTipText("");
-        EliminarNota1.setBorder(null);
-        EliminarNota1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        EliminarNota1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                EliminarNota1ActionPerformed(evt);
-            }
-        });
+        javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
+        jPanel11.setLayout(jPanel11Layout);
+        jPanel11Layout.setHorizontalGroup(
+            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel11Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel11Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(ModificarNota1, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(EliminarNota1, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        jPanel11Layout.setVerticalGroup(
+            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel11Layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ModificarNota1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(EliminarNota1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(15, 15, 15))
+        );
 
-        DescargarCalificacionesAlumno.setBackground(new java.awt.Color(204, 102, 0));
-        DescargarCalificacionesAlumno.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        DescargarCalificacionesAlumno.setForeground(new java.awt.Color(255, 255, 255));
-        DescargarCalificacionesAlumno.setText("Descargar Notas");
-        DescargarCalificacionesAlumno.setToolTipText("");
-        DescargarCalificacionesAlumno.setBorder(null);
-        DescargarCalificacionesAlumno.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        DescargarCalificacionesAlumno.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DescargarCalificacionesAlumnoActionPerformed(evt);
-            }
-        });
+        tabAlumnos1.addTab("Alumnos", jPanel11);
 
-        ModificarNota1.setBackground(new java.awt.Color(0, 0, 204));
-        ModificarNota1.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        ModificarNota1.setForeground(new java.awt.Color(255, 255, 255));
-        ModificarNota1.setText("Modificar Notas");
-        ModificarNota1.setToolTipText("");
-        ModificarNota1.setBorder(null);
-        ModificarNota1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        ModificarNota1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ModificarNota1ActionPerformed(evt);
-            }
-        });
+        jPanel14.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel32.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
+        jLabel32.setText("Agregar Alumnos");
+
+        tablaAlumnosCargaMasiva.setAutoCreateRowSorter(true);
+        tablaAlumnosCargaMasiva.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        jScrollPane7.setViewportView(tablaAlumnosCargaMasiva);
+        tablaAlumnosCargaMasiva.setColumnModel(tablaAlumnosCargaMasiva.getColumnModel());
 
         AddNotaAlumno1.setBackground(new java.awt.Color(0, 153, 0));
         AddNotaAlumno1.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
@@ -1766,6 +1897,22 @@ public class AdminView extends javax.swing.JFrame {
             }
         });
 
+        AddNotaAlumno3.setBackground(new java.awt.Color(153, 0, 0));
+        AddNotaAlumno3.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
+        AddNotaAlumno3.setForeground(new java.awt.Color(255, 255, 255));
+        AddNotaAlumno3.setText("Guardar Alumnos");
+        AddNotaAlumno3.setToolTipText("");
+        AddNotaAlumno3.setBorder(null);
+        AddNotaAlumno3.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        AddNotaAlumno3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AddNotaAlumno3ActionPerformed(evt);
+            }
+        });
+
+        comboBoxGrupos.setFont(new java.awt.Font("Poppins Medium", 0, 12)); // NOI18N
+        comboBoxGrupos.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
         javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
         jPanel14.setLayout(jPanel14Layout);
         jPanel14Layout.setHorizontalGroup(
@@ -1773,141 +1920,39 @@ public class AdminView extends javax.swing.JFrame {
             .addGroup(jPanel14Layout.createSequentialGroup()
                 .addGap(12, 12, 12)
                 .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane7)
+                    .addComponent(AddNotaAlumno3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 644, Short.MAX_VALUE)
                     .addGroup(jPanel14Layout.createSequentialGroup()
                         .addComponent(jLabel32)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel14Layout.createSequentialGroup()
-                        .addComponent(DescargarCalificacionesAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(AddNotaAlumno1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ModificarNota1, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(EliminarNota1, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(comboBoxGrupos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(AddNotaAlumno1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel14Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel32)
+                .addGap(21, 21, 21)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel32)
+                    .addComponent(comboBoxGrupos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 422, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(AddNotaAlumno1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ModificarNota1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(EliminarNota1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(DescargarCalificacionesAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(AddNotaAlumno1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addComponent(AddNotaAlumno3, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(31, Short.MAX_VALUE))
         );
 
-        tabAlumnos1.addTab("Todos los Alumnos", jPanel14);
+        tabAlumnos1.addTab("Agregar Alumnos", jPanel14);
 
-        agregarNota1.setBackground(new java.awt.Color(255, 255, 255));
-
-        jLabel43.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel43.setText("Evaluación");
-
-        guardarNota1.setBackground(new java.awt.Color(0, 0, 204));
-        guardarNota1.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        guardarNota1.setForeground(new java.awt.Color(255, 255, 255));
-        guardarNota1.setText("Guardar Nota");
-        guardarNota1.setBorder(null);
-        guardarNota1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        guardarNota1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                guardarNota1ActionPerformed(evt);
-            }
-        });
-
-        jLabel53.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
-        jLabel53.setForeground(new java.awt.Color(0, 0, 204));
-        jLabel53.setText("Agregar Nota");
-
-        jLabel54.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel54.setText("Alumno");
-
-        txtTituloNota2.setEditable(false);
-        txtTituloNota2.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-
-        txtTituloNota4.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-
-        jLabel55.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel55.setText("Nota");
-
-        jComboTituloNota1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-        jComboTituloNota1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        jLabel56.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel56.setText("Asignatura");
-
-        txtTituloNota5.setEditable(false);
-        txtTituloNota5.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-
-        jLabel9.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-        jLabel9.setText("jLabel2");
-
-        javax.swing.GroupLayout agregarNota1Layout = new javax.swing.GroupLayout(agregarNota1);
-        agregarNota1.setLayout(agregarNota1Layout);
-        agregarNota1Layout.setHorizontalGroup(
-            agregarNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, agregarNota1Layout.createSequentialGroup()
-                .addContainerGap(245, Short.MAX_VALUE)
-                .addGroup(agregarNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel55, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtTituloNota4, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                    .addComponent(jLabel54, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtTituloNota2, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                    .addComponent(jLabel53, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(guardarNota1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jComboTituloNota1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel56, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtTituloNota5)
-                    .addGroup(agregarNota1Layout.createSequentialGroup()
-                        .addComponent(jLabel43, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addGap(192, 192, 192))
-        );
-        agregarNota1Layout.setVerticalGroup(
-            agregarNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(agregarNota1Layout.createSequentialGroup()
-                .addGap(77, 77, 77)
-                .addComponent(jLabel53, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel54)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtTituloNota2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel56)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtTituloNota5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(agregarNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel43)
-                    .addComponent(jLabel9))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboTituloNota1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel55)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtTituloNota4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(16, 16, 16)
-                .addComponent(guardarNota1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(175, Short.MAX_VALUE))
-        );
-
-        tabAlumnos1.addTab("Agregar Alumno", agregarNota1);
-
-        ModifNota1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanelModificarAlumno.setBackground(new java.awt.Color(255, 255, 255));
 
         EditNota1.setBackground(new java.awt.Color(0, 0, 204));
         EditNota1.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
         EditNota1.setForeground(new java.awt.Color(255, 255, 255));
-        EditNota1.setText("Modificar Evaluación");
+        EditNota1.setText("Modificar");
         EditNota1.setBorder(null);
         EditNota1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         EditNota1.addActionListener(new java.awt.event.ActionListener() {
@@ -1918,105 +1963,103 @@ public class AdminView extends javax.swing.JFrame {
 
         jLabel57.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel57.setForeground(new java.awt.Color(0, 0, 204));
-        jLabel57.setText("Editar o Eliminar Evaluación");
+        jLabel57.setText("Editar Alumno");
 
         jLabel58.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel58.setText("Asignatura");
+        jLabel58.setText("Nombre");
 
-        txtModifEval1.setEditable(false);
-        txtModifEval1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtNombreAlumno.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
 
         jLabel59.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel59.setText("Evaluación");
+        jLabel59.setText("Correo");
 
-        txtModifEval6.setEditable(false);
-        txtModifEval6.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtEmailAlumno.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
 
         jLabel60.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel60.setText("Nota");
-
-        txtModifEval7.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
+        jLabel60.setText("Grupo");
 
         jLabel61.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel61.setText("Peso");
+        jLabel61.setText("Id");
 
-        txtModifEval8.setEditable(false);
-        txtModifEval8.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT))));
-        txtModifEval8.setToolTipText("d/MM/yy");
-        txtModifEval8.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtIdAlumno.setEditable(false);
+        txtIdAlumno.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT))));
+        txtIdAlumno.setToolTipText("d/MM/yy");
+        txtIdAlumno.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
 
         jLabel62.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
-        jLabel62.setText("Id");
+        jLabel62.setText("Apellidos");
 
-        txtModifEval9.setEditable(false);
-        txtModifEval9.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtApellidoAlumno.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
 
-        javax.swing.GroupLayout ModifNota1Layout = new javax.swing.GroupLayout(ModifNota1);
-        ModifNota1.setLayout(ModifNota1Layout);
-        ModifNota1Layout.setHorizontalGroup(
-            ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(ModifNota1Layout.createSequentialGroup()
+        comboBoxGrados1.setFont(new java.awt.Font("Poppins Medium", 0, 12)); // NOI18N
+        comboBoxGrados1.setModel(comboBoxGrupos.getModel());
+
+        javax.swing.GroupLayout jPanelModificarAlumnoLayout = new javax.swing.GroupLayout(jPanelModificarAlumno);
+        jPanelModificarAlumno.setLayout(jPanelModificarAlumnoLayout);
+        jPanelModificarAlumnoLayout.setHorizontalGroup(
+            jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelModificarAlumnoLayout.createSequentialGroup()
                 .addGap(94, 94, 94)
-                .addGroup(ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(ModifNota1Layout.createSequentialGroup()
-                        .addComponent(jLabel57, javax.swing.GroupLayout.PREFERRED_SIZE, 383, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelModificarAlumnoLayout.createSequentialGroup()
+                        .addComponent(comboBoxGrados1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(ModifNota1Layout.createSequentialGroup()
+                    .addGroup(jPanelModificarAlumnoLayout.createSequentialGroup()
                         .addComponent(jLabel59, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ModifNota1Layout.createSequentialGroup()
-                        .addGroup(ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(ModifNota1Layout.createSequentialGroup()
-                                .addGroup(ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(txtModifEval7, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
-                                    .addComponent(jLabel60, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelModificarAlumnoLayout.createSequentialGroup()
+                        .addGroup(jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanelModificarAlumnoLayout.createSequentialGroup()
+                                .addComponent(jLabel57, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel61, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel61, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(txtModifEval8)))
-                            .addComponent(txtModifEval6, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, ModifNota1Layout.createSequentialGroup()
-                                .addGroup(ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtModifEval1, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtIdAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanelModificarAlumnoLayout.createSequentialGroup()
+                                .addComponent(jLabel60, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(txtEmailAlumno, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanelModificarAlumnoLayout.createSequentialGroup()
+                                .addGroup(jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtNombreAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel58, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel62, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(txtModifEval9, javax.swing.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)))
+                                    .addComponent(txtApellidoAlumno, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)))
                             .addComponent(EditNota1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(113, 113, 113))))
         );
-        ModifNota1Layout.setVerticalGroup(
-            ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(ModifNota1Layout.createSequentialGroup()
-                .addGap(88, 88, 88)
-                .addComponent(jLabel57, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+        jPanelModificarAlumnoLayout.setVerticalGroup(
+            jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelModificarAlumnoLayout.createSequentialGroup()
+                .addGap(166, 166, 166)
+                .addGroup(jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel57, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtIdAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel61))
                 .addGap(27, 27, 27)
-                .addGroup(ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel58)
                     .addComponent(jLabel62))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtModifEval1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtModifEval9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtNombreAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtApellidoAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel59)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtModifEval6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtEmailAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel60)
-                    .addComponent(jLabel61))
+                .addComponent(jLabel60)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(ModifNota1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtModifEval7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtModifEval8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 103, Short.MAX_VALUE)
+                .addComponent(comboBoxGrados1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(EditNota1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(120, 120, 120))
+                .addGap(216, 216, 216))
         );
 
-        tabAlumnos1.addTab("Modificar Alumno", ModifNota1);
+        tabAlumnos1.addTab("Modificar Alumno", jPanelModificarAlumno);
 
         jTabbedPane4.addTab("Alumnos", tabAlumnos1);
 
@@ -2297,7 +2340,7 @@ public class AdminView extends javax.swing.JFrame {
                 txtAddGrupo1.setText("");
                 cargarGrados();
                 jTabbedPane3.setSelectedComponent(PanelGrados);
-                
+
             } else {
                 JOptionPane.showMessageDialog(this, "Error al eliminar el grupo.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -2450,44 +2493,118 @@ public class AdminView extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_ModifGradoActionPerformed
 
-    private void EditNota1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditNota1ActionPerformed
+    private void EliminarProfeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EliminarProfeActionPerformed
+        // Obtener la fila seleccionada en la tabla de profesores
+        int selectedRow = tablaProfesores.getSelectedRow();
 
-    }//GEN-LAST:event_EditNota1ActionPerformed
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un profesor para eliminar.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-    private void guardarNota1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guardarNota1ActionPerformed
+        // Confirmación de eliminación
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Estás seguro de que deseas eliminar este profesor?",
+                "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
 
-    }//GEN-LAST:event_guardarNota1ActionPerformed
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Obtener ID del profesor desde la tabla
+            int idProfesor = Integer.parseInt(tablaProfesores.getValueAt(selectedRow, 0).toString());
 
-    private void AddNotaAlumno1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddNotaAlumno1ActionPerformed
+            // Controladores
+            DocenteController docenteController = new DocenteController();
+            UsuarioController usuarioController = new UsuarioController();
 
-    }//GEN-LAST:event_AddNotaAlumno1ActionPerformed
+            // Intentar eliminar al usuario asociado
+            boolean usuarioEliminado = usuarioController.eliminarUsuarioPorIdDocente(idProfesor);
 
-    private void ModificarNota1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ModificarNota1ActionPerformed
+            if (!usuarioEliminado) {
+                JOptionPane.showMessageDialog(this, "Error al eliminar el usuario asociado.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-    }//GEN-LAST:event_ModificarNota1ActionPerformed
+            // Intentar eliminar al profesor
+            boolean docenteEliminado = docenteController.eliminarDocente(idProfesor);
 
-    private void DescargarCalificacionesAlumnoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DescargarCalificacionesAlumnoActionPerformed
+            if (docenteEliminado) {
+                JOptionPane.showMessageDialog(this, "Profesor eliminado correctamente.");
+                cargarProfesores(); // Recargar la tabla
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al eliminar el profesor.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_EliminarProfeActionPerformed
 
-    }//GEN-LAST:event_DescargarCalificacionesAlumnoActionPerformed
+    private void ModificarProfesorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ModificarProfesorActionPerformed
+        // Obtener la fila seleccionada
+        int selectedRow = tablaProfesores.getSelectedRow();
 
-    private void EliminarNota1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EliminarNota1ActionPerformed
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un profesor para modificar.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-    }//GEN-LAST:event_EliminarNota1ActionPerformed
+        // Obtener datos del profesor seleccionado
+        int idProfesor = Integer.parseInt(tablaProfesores.getValueAt(selectedRow, 0).toString());
+        String nombre = tablaProfesores.getValueAt(selectedRow, 1).toString();
+        String apellido = tablaProfesores.getValueAt(selectedRow, 2).toString();
+        String email = tablaProfesores.getValueAt(selectedRow, 3).toString();
+        String especialidad = tablaProfesores.getValueAt(selectedRow, 4).toString();
+        String fechaContratacion = tablaProfesores.getValueAt(selectedRow, 5).toString();
 
-    private void EliminarNota2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EliminarNota2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_EliminarNota2ActionPerformed
+        // Cargar datos en los campos de texto
+        txtIdProfesor.setText(String.valueOf(idProfesor));
+        txtNombreProfesor.setText(nombre);
+        txtApellidoProfesor.setText(apellido);
+        txtEmailProfesor.setText(email);
+        txtEspecialidadProfesor.setText(especialidad);
+        txtFechaContratacionProfesor.setText(fechaContratacion);
 
-    private void ModificarNota2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ModificarNota2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_ModificarNota2ActionPerformed
+        // Cambiar a la pestaña de edición
+        tabProfes.setSelectedComponent(AddModifProfe);
+    }//GEN-LAST:event_ModificarProfesorActionPerformed
 
     private void AddNotaAlumno2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddNotaAlumno2ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_AddNotaAlumno2ActionPerformed
 
     private void guardarNota2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guardarNota2ActionPerformed
-        // TODO add your handling code here:
+        // Obtener datos del formulario
+        String nombre = txtNombreProfesor.getText().trim();
+        String apellido = txtApellidoProfesor.getText().trim();
+        String email = txtEmailProfesor.getText().trim();
+        String especialidad = txtEspecialidadProfesor.getText().trim();
+        String fechaContratacionStr = txtFechaContratacionProfesor.getText().trim();
+        String nombreUsuario = txtNombreUsuario.getText().trim();
+        String contrasena = txtContrasenaP.getText().trim();
+
+        // Validar datos
+        if (nombre.isEmpty() || apellido.isEmpty() || email.isEmpty() || especialidad.isEmpty() || fechaContratacionStr.isEmpty() || nombreUsuario.isEmpty() || contrasena.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            // Convertir fecha
+            java.util.Date fechaContratacion = new SimpleDateFormat("d/MM/yy").parse(fechaContratacionStr);
+
+            // Crear objeto Docente
+            Docente nuevoDocente = new Docente(0, nombre, apellido, email, especialidad, fechaContratacion, new Date());
+
+            // Llamar al controlador para agregar docente y usuario
+            UsuarioController usuarioController = new UsuarioController();
+            boolean agregado = usuarioController.agregarDocente(nuevoDocente, nombreUsuario, contrasena);
+
+            if (agregado) {
+                JOptionPane.showMessageDialog(this, "Profesor y usuario agregados correctamente.");
+                cargarProfesoresEnTabla(); // Actualizar la tabla de profesores
+
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al agregar el profesor y su usuario.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (ParseException e) {
+            JOptionPane.showMessageDialog(this, "La fecha debe estar en formato 'd/MM/yy'.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_guardarNota2ActionPerformed
 
     private void EditNotaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditNotaActionPerformed
@@ -2674,7 +2791,7 @@ public class AdminView extends javax.swing.JFrame {
         }
 
         // Obtener valores de la fila seleccionada
-        int idAsignatura =(int) tablaAsignaturas.getValueAt(selectedRow, 0);
+        int idAsignatura = (int) tablaAsignaturas.getValueAt(selectedRow, 0);
         String nombreClase = tablaAsignaturas.getValueAt(selectedRow, 1).toString();
         String grupoSeleccionado = tablaAsignaturas.getValueAt(selectedRow, 3).toString();
 
@@ -2695,13 +2812,13 @@ public class AdminView extends javax.swing.JFrame {
     private void btnModificarHorarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarHorarioActionPerformed
         // Verificar que haya una fila seleccionada
         int selectedRow = tablaHorarios.getSelectedRow();
-        int selectedRowAsignaturas=tablaAsignaturas.getSelectedRow();
-        
+        int selectedRowAsignaturas = tablaAsignaturas.getSelectedRow();
+
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(this, "Por favor, selecciona un horario para modificar.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        int idAsignatura =(int) tablaAsignaturas.getValueAt(selectedRowAsignaturas, 0);
+        int idAsignatura = (int) tablaAsignaturas.getValueAt(selectedRowAsignaturas, 0);
         // Obtener el ID del horario de la fila seleccionada
         int idHorario = Integer.parseInt(tablaHorarios.getValueAt(selectedRow, 0).toString());
 
@@ -2741,8 +2858,8 @@ public class AdminView extends javax.swing.JFrame {
     private void btnEliminarHorarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarHorarioActionPerformed
         int selectedRow = tablaHorarios.getSelectedRow();
         String nombreClase = txtNombreClase3.getText();
-         int selectedRowAsignaturas=tablaAsignaturas.getSelectedRow();
-        int idAsignatura =(int) tablaAsignaturas.getValueAt(selectedRowAsignaturas, 0);
+        int selectedRowAsignaturas = tablaAsignaturas.getSelectedRow();
+        int idAsignatura = (int) tablaAsignaturas.getValueAt(selectedRowAsignaturas, 0);
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(this, "Por favor, selecciona un horario para eliminar.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
@@ -2769,6 +2886,191 @@ public class AdminView extends javax.swing.JFrame {
     private void jComboBoxGruposMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jComboBoxGruposMousePressed
         filtrarAsignaturasPorGrupo();
     }//GEN-LAST:event_jComboBoxGruposMousePressed
+
+    private void EditNota1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditNota1ActionPerformed
+
+        // Obtener valores del formulario
+        int idAlumno = Integer.parseInt(txtIdAlumno.getText());
+        String nombre = txtNombreAlumno.getText().trim();
+        String apellido = txtApellidoAlumno.getText().trim();
+        String email = txtEmailAlumno.getText().trim();
+        String nuevoGrupo = comboBoxGrados1.getSelectedItem().toString();
+
+        if (nombre.isEmpty() || apellido.isEmpty() || email.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        AlumnoController alumnoController = new AlumnoController();
+        Alumno alumno = new Alumno(idAlumno, nombre, apellido, email, null, null);
+
+        // Actualizar los datos del alumno
+        boolean alumnoActualizado = alumnoController.actualizarAlumno(alumno);
+
+        // Actualizar el grupo del alumno
+        GrupoController grupoController = new GrupoController();
+        int nuevoIdGrupo = grupoController.obtenerIdGrupoPorNombre(nuevoGrupo);
+        AlumnoGrupoController alumnogrupoController = new AlumnoGrupoController();
+        boolean grupoActualizado = alumnogrupoController.actualizarAlumnoGrupo(idAlumno, nuevoIdGrupo);
+
+        if (alumnoActualizado && grupoActualizado) {
+            JOptionPane.showMessageDialog(this, "Alumno modificado correctamente.");
+            cargarAlumnosEnTabla(); // Recargar la tabla de alumnos
+            tabAlumnos1.setSelectedComponent(jPanel11); // Volver a la vista principal
+        } else {
+            JOptionPane.showMessageDialog(this, "Error al modificar el alumno.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_EditNota1ActionPerformed
+
+    private void AddNotaAlumno1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddNotaAlumno1ActionPerformed
+        DefaultTableModel modelo = (DefaultTableModel) tablaAlumnosCargaMasiva.getModel();
+        modelo.addRow(new Object[]{"", "", ""}); // Agrega una fila vacía
+    }//GEN-LAST:event_AddNotaAlumno1ActionPerformed
+
+    private void ModificarNota1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ModificarNota1ActionPerformed
+        // Obtener la fila seleccionada en la tabla de alumnos
+        int selectedRow = TablaAlumnosTotales.getSelectedRow();
+
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un alumno para modificar.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Obtener valores del alumno seleccionado
+        int idAlumno = Integer.parseInt(TablaAlumnosTotales.getValueAt(selectedRow, 0).toString());
+        String nombre = TablaAlumnosTotales.getValueAt(selectedRow, 1).toString();
+        String apellido = TablaAlumnosTotales.getValueAt(selectedRow, 2).toString();
+        String email = TablaAlumnosTotales.getValueAt(selectedRow, 3).toString();
+
+        // Mostrar los datos en los campos de texto y comboBox
+        txtIdAlumno.setText(String.valueOf(idAlumno));
+        txtNombreAlumno.setText(nombre);
+        txtApellidoAlumno.setText(apellido);
+        txtEmailAlumno.setText(email);
+
+        comboBoxGrados1.setSelectedItem(TablaAlumnosTotales.getValueAt(selectedRow, 4).toString());
+
+        // Cambiar al panel de modificación
+        jTabbedPane2.setSelectedComponent(jPanelModificarAlumno);
+    }//GEN-LAST:event_ModificarNota1ActionPerformed
+
+    private void EliminarNota1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EliminarNota1ActionPerformed
+// Obtener la fila seleccionada en la tabla de alumnos
+        int selectedRow = TablaAlumnosTotales.getSelectedRow();
+
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un alumno para eliminar.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Confirmar eliminación
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Estás seguro de que deseas eliminar este alumno?",
+                "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Obtener ID del alumno
+            int idAlumno = Integer.parseInt(TablaAlumnosTotales.getValueAt(selectedRow, 0).toString());
+
+            // Eliminar el usuario asociado al alumno
+            UsuarioController usuarioController = new UsuarioController();
+            boolean usuarioEliminado = usuarioController.eliminarUsuarioPorIdAlumno(idAlumno);
+
+            if (!usuarioEliminado) {
+                JOptionPane.showMessageDialog(this, "Error al eliminar el usuario asociado al alumno.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Eliminar el alumno
+            AlumnoController alumnoController = new AlumnoController();
+            boolean alumnoEliminado = alumnoController.eliminarAlumno(idAlumno);
+
+            if (alumnoEliminado) {
+                JOptionPane.showMessageDialog(this, "Alumno eliminado correctamente.");
+                cargarAlumnosEnTabla(); // Recargar la tabla
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al eliminar el alumno.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_EliminarNota1ActionPerformed
+
+    private void AddNotaAlumno3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddNotaAlumno3ActionPerformed
+        DefaultTableModel modelo = (DefaultTableModel) tablaAlumnosCargaMasiva.getModel();
+        String grupoSeleccionado = (String) comboBoxGrupos.getSelectedItem();
+
+        if (grupoSeleccionado == null || grupoSeleccionado.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un grupo.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        GrupoController grupoController = new GrupoController();
+        int idGrupo = grupoController.obtenerIdGrupoPorNombre(grupoSeleccionado);
+
+        if (idGrupo == -1) {
+            JOptionPane.showMessageDialog(this, "El grupo seleccionado no existe.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        AlumnoController alumnoController = new AlumnoController();
+        int filasAgregadas = 0;
+
+        for (int i = 0; i < modelo.getRowCount(); i++) {
+            String nombre = (String) modelo.getValueAt(i, 0);
+            String apellido = (String) modelo.getValueAt(i, 1);
+            String email = (String) modelo.getValueAt(i, 2);
+
+            if (nombre == null || nombre.isEmpty() || apellido == null || apellido.isEmpty() || email == null || email.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, completa todos los campos de la tabla.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            Alumno nuevoAlumno = new Alumno(0, nombre, apellido, email, null, null);
+            if (alumnoController.agregarAlumnoConGrupo(nuevoAlumno, idGrupo)) {
+                filasAgregadas++;
+            }
+        }
+
+        JOptionPane.showMessageDialog(this, filasAgregadas + " alumnos agregados correctamente al grupo " + grupoSeleccionado + ".");
+        cargarAlumnosEnTabla(); // Recargar la tabla de alumnos en la vista
+    }//GEN-LAST:event_AddNotaAlumno3ActionPerformed
+
+    private void modifyProfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modifyProfActionPerformed
+        try {
+            // Obtener datos del formulario
+            int idProfesor = Integer.parseInt(txtIdProfesor.getText());
+            String nombre = txtNombreProfesor.getText().trim();
+            String apellido = txtApellidoProfesor.getText().trim();
+            String email = txtEmailProfesor.getText().trim();
+            String especialidad = txtEspecialidadProfesor.getText().trim();
+            String fechaContratacionStr = txtFechaContratacionProfesor.getText().trim();
+
+            if (nombre.isEmpty() || apellido.isEmpty() || email.isEmpty() || especialidad.isEmpty() || fechaContratacionStr.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, completa todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Parsear fecha de contratación
+            Date fechaContratacion = new SimpleDateFormat("dd/MM/yyyy").parse(fechaContratacionStr);
+
+            // Crear objeto Docente con los datos editados
+            Docente docente = new Docente(idProfesor, nombre, apellido, email, especialidad, fechaContratacion, null);
+
+            // Actualizar en la base de datos
+            DocenteController docenteController = new DocenteController();
+            boolean actualizado = docenteController.actualizarDocente(docente);
+
+            if (actualizado) {
+                JOptionPane.showMessageDialog(this, "Profesor actualizado correctamente.");
+                cargarProfesores(); // Recargar la tabla de profesores
+                tabProfes.setSelectedComponent(jPanel1); // Volver a la pestaña principal
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al actualizar el profesor.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (ParseException e) {
+            JOptionPane.showMessageDialog(this, "La fecha debe tener el formato 'dd/MM/yyyy'.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "El ID del profesor no es válido.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_modifyProfActionPerformed
 
     /**
      * @param args the command line arguments
@@ -2808,11 +3110,12 @@ public class AdminView extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton AddGrado;
     private javax.swing.JButton AddHorario;
+    private javax.swing.JPanel AddModifProfe;
     private javax.swing.JButton AddNotaAlumno1;
     private javax.swing.JButton AddNotaAlumno2;
+    private javax.swing.JButton AddNotaAlumno3;
     private javax.swing.JButton AgregarClase;
     private javax.swing.JButton CambioContraseña;
-    private javax.swing.JButton DescargarCalificacionesAlumno;
     private javax.swing.JButton DescargarEv;
     private javax.swing.JLabel Descripcion;
     private javax.swing.JButton EditNota;
@@ -2822,21 +3125,19 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JButton EditarGrado;
     private javax.swing.JButton EliminarClase;
     private javax.swing.JButton EliminarNota1;
-    private javax.swing.JButton EliminarNota2;
+    private javax.swing.JButton EliminarProfe;
     private javax.swing.JButton ModifGrado;
     private javax.swing.JPanel ModifGrados;
-    private javax.swing.JPanel ModifNota1;
     private javax.swing.JButton ModificarGrupo;
     private javax.swing.JButton ModificarNota1;
-    private javax.swing.JButton ModificarNota2;
+    private javax.swing.JButton ModificarProfesor;
     private javax.swing.JLabel Nombre;
     private javax.swing.JPanel PanelGrados;
+    private javax.swing.JTable TablaAlumnosTotales;
     private javax.swing.JButton VerHorarios;
     private javax.swing.JButton addGrupo;
     private javax.swing.JPanel agregarClase;
     private javax.swing.JPanel agregarGrupo;
-    private javax.swing.JPanel agregarNota1;
-    private javax.swing.JPanel agregarNota2;
     private javax.swing.JButton btnAgregarHorario;
     private javax.swing.JButton btnEliminarHorario;
     private javax.swing.JButton btnGuardarClase;
@@ -2844,18 +3145,16 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JButton closeSession1;
     private javax.swing.JComboBox<String> comboBoxDia;
     private javax.swing.JComboBox<String> comboBoxGrado;
+    private javax.swing.JComboBox<String> comboBoxGrados1;
+    private javax.swing.JComboBox<String> comboBoxGrupos;
     private javax.swing.JComboBox<String> comboBoxProfesor;
     private javax.swing.JComboBox<String> comboBoxProfesor1;
     private javax.swing.JComboBox<String> comboDia;
     private javax.swing.JPanel editarProfesor;
-    private javax.swing.JButton guardarNota1;
     private javax.swing.JButton guardarNota2;
     private javax.swing.JComboBox<String> jComboBoxGrupos;
     private javax.swing.JComboBox<String> jComboBoxGrupos2;
-    private javax.swing.JComboBox<String> jComboTituloNota1;
-    private javax.swing.JComboBox<String> jComboTituloNota2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel22;
@@ -2876,7 +3175,6 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel40;
     private javax.swing.JLabel jLabel41;
     private javax.swing.JLabel jLabel42;
-    private javax.swing.JLabel jLabel43;
     private javax.swing.JLabel jLabel44;
     private javax.swing.JLabel jLabel45;
     private javax.swing.JLabel jLabel46;
@@ -2884,22 +3182,21 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel48;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel52;
-    private javax.swing.JLabel jLabel53;
-    private javax.swing.JLabel jLabel54;
-    private javax.swing.JLabel jLabel55;
-    private javax.swing.JLabel jLabel56;
     private javax.swing.JLabel jLabel57;
     private javax.swing.JLabel jLabel58;
     private javax.swing.JLabel jLabel59;
     private javax.swing.JLabel jLabel60;
     private javax.swing.JLabel jLabel61;
     private javax.swing.JLabel jLabel62;
-    private javax.swing.JLabel jLabel63;
-    private javax.swing.JLabel jLabel64;
     private javax.swing.JLabel jLabel65;
     private javax.swing.JLabel jLabel66;
     private javax.swing.JLabel jLabel67;
+    private javax.swing.JLabel jLabel68;
+    private javax.swing.JLabel jLabel69;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel70;
+    private javax.swing.JLabel jLabel71;
+    private javax.swing.JLabel jLabel72;
     private javax.swing.JLabel jLabel74;
     private javax.swing.JLabel jLabel75;
     private javax.swing.JLabel jLabel76;
@@ -2910,9 +3207,9 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel81;
     private javax.swing.JLabel jLabel82;
     private javax.swing.JLabel jLabel83;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel14;
@@ -2925,8 +3222,10 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
+    private javax.swing.JPanel jPanelModificarAlumno;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
@@ -2939,11 +3238,12 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JLabel lblBienvenida3;
     private javax.swing.JPanel mainPanel3;
     private javax.swing.JButton modifEval;
+    private javax.swing.JButton modifyProf;
     private javax.swing.JTabbedPane tabAlumnos;
     private javax.swing.JTabbedPane tabAlumnos1;
-    private javax.swing.JTabbedPane tabAlumnos2;
+    private javax.swing.JTabbedPane tabProfes;
+    private javax.swing.JTable tablaAlumnosCargaMasiva;
     private javax.swing.JTable tablaAsignaturas;
-    private javax.swing.JTable tablaCalificacionAlumno1;
     private javax.swing.JTable tablaClaseGrados;
     private javax.swing.JScrollPane tablaClases;
     private javax.swing.JTable tablaGrados;
@@ -2952,8 +3252,15 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JTable tablaProfesores;
     private javax.swing.JTextField txtAddGrupo;
     private javax.swing.JTextField txtAddGrupo1;
+    private javax.swing.JTextField txtApellidoAlumno;
+    private javax.swing.JTextField txtApellidoProfesor;
     private javax.swing.JPasswordField txtContrasena;
     private javax.swing.JPasswordField txtContrasena2;
+    private javax.swing.JTextField txtContrasenaP;
+    private javax.swing.JTextField txtEmailAlumno;
+    private javax.swing.JTextField txtEmailProfesor;
+    private javax.swing.JTextField txtEspecialidadProfesor;
+    private javax.swing.JFormattedTextField txtFechaContratacionProfesor;
     private javax.swing.JTextField txtGrado;
     private javax.swing.JTextField txtGrado1;
     private javax.swing.JTextField txtGrado3;
@@ -2962,20 +3269,14 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JFormattedTextField txtHoraFin1;
     private javax.swing.JFormattedTextField txtHoraInicio;
     private javax.swing.JFormattedTextField txtHoraInicio1;
-    private javax.swing.JTextField txtModifEval1;
-    private javax.swing.JTextField txtModifEval6;
-    private javax.swing.JTextField txtModifEval7;
-    private javax.swing.JFormattedTextField txtModifEval8;
-    private javax.swing.JTextField txtModifEval9;
+    private javax.swing.JFormattedTextField txtIdAlumno;
+    private javax.swing.JTextField txtIdProfesor;
+    private javax.swing.JTextField txtNombreAlumno;
     private javax.swing.JTextField txtNombreClase;
     private javax.swing.JTextField txtNombreClase1;
     private javax.swing.JTextField txtNombreClase2;
     private javax.swing.JTextField txtNombreClase3;
-    private javax.swing.JTextField txtTituloNota2;
-    private javax.swing.JTextField txtTituloNota4;
-    private javax.swing.JTextField txtTituloNota5;
-    private javax.swing.JTextField txtTituloNota6;
-    private javax.swing.JTextField txtTituloNota7;
-    private javax.swing.JTextField txtTituloNota8;
+    private javax.swing.JTextField txtNombreProfesor;
+    private javax.swing.JTextField txtNombreUsuario;
     // End of variables declaration//GEN-END:variables
 }
