@@ -262,7 +262,7 @@ public class UsuarioController {
 
         // Crear el usuario asociado al docente
         pstmtUsuario = conn.prepareStatement(sqlUsuario);
-        pstmtUsuario.setString(1, nombreUsuario.toLowerCase().replace(" ", "") + "123");
+        pstmtUsuario.setString(1, nombreUsuario.replace(" ", ""));
         pstmtUsuario.setString(2, contrasena);
         pstmtUsuario.setString(3, "Docente");
         pstmtUsuario.setInt(4, idDocente);

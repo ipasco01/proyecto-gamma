@@ -147,9 +147,6 @@ public class LoginView extends javax.swing.JFrame {
                     System.out.println("Cargando DocenteView para: " + usuario.getNombreUsuario());
                     new DocenteView(usuario).setVisible(true);
                     break;
-                case "Padre":
-                    //new PadreView(usuario).setVisible(true);
-                    break;
                 case "Admin":
                     new AdminView(usuario).setVisible(true);
                     break;

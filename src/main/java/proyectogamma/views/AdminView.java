@@ -513,10 +513,10 @@ public class AdminView extends javax.swing.JFrame {
         txtEmailAlumno = new javax.swing.JTextField();
         jLabel60 = new javax.swing.JLabel();
         jLabel61 = new javax.swing.JLabel();
-        txtIdAlumno = new javax.swing.JFormattedTextField();
         jLabel62 = new javax.swing.JLabel();
         txtApellidoAlumno = new javax.swing.JTextField();
         comboBoxGrados1 = new javax.swing.JComboBox<>();
+        txtIdAlumno = new javax.swing.JTextField();
         jPanel7 = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jPanel12 = new javax.swing.JPanel();
@@ -1981,11 +1981,6 @@ public class AdminView extends javax.swing.JFrame {
         jLabel61.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
         jLabel61.setText("Id");
 
-        txtIdAlumno.setEditable(false);
-        txtIdAlumno.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT))));
-        txtIdAlumno.setToolTipText("d/MM/yy");
-        txtIdAlumno.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
-
         jLabel62.setFont(new java.awt.Font("Poppins", 1, 12)); // NOI18N
         jLabel62.setText("Apellidos");
 
@@ -1993,6 +1988,10 @@ public class AdminView extends javax.swing.JFrame {
 
         comboBoxGrados1.setFont(new java.awt.Font("Poppins Medium", 0, 12)); // NOI18N
         comboBoxGrados1.setModel(comboBoxGrupos.getModel());
+
+        txtIdAlumno.setEditable(false);
+        txtIdAlumno.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        txtIdAlumno.setText("jTextField1");
 
         javax.swing.GroupLayout jPanelModificarAlumnoLayout = new javax.swing.GroupLayout(jPanelModificarAlumno);
         jPanelModificarAlumno.setLayout(jPanelModificarAlumnoLayout);
@@ -2014,7 +2013,8 @@ public class AdminView extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(jLabel61, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtIdAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(txtIdAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(1, 1, 1))
                             .addGroup(jPanelModificarAlumnoLayout.createSequentialGroup()
                                 .addComponent(jLabel60, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE))
@@ -2036,8 +2036,8 @@ public class AdminView extends javax.swing.JFrame {
                 .addGap(166, 166, 166)
                 .addGroup(jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel57, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtIdAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel61))
+                    .addComponent(jLabel61)
+                    .addComponent(txtIdAlumno, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(27, 27, 27)
                 .addGroup(jPanelModificarAlumnoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel58)
@@ -2951,7 +2951,7 @@ public class AdminView extends javax.swing.JFrame {
         comboBoxGrados1.setSelectedItem(TablaAlumnosTotales.getValueAt(selectedRow, 4).toString());
 
         // Cambiar al panel de modificación
-        jTabbedPane2.setSelectedComponent(jPanelModificarAlumno);
+        tabAlumnos1.setSelectedComponent(jPanelModificarAlumno);
     }//GEN-LAST:event_ModificarNota1ActionPerformed
 
     private void EliminarNota1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EliminarNota1ActionPerformed
@@ -3061,7 +3061,7 @@ public class AdminView extends javax.swing.JFrame {
             if (actualizado) {
                 JOptionPane.showMessageDialog(this, "Profesor actualizado correctamente.");
                 cargarProfesores(); // Recargar la tabla de profesores
-                tabProfes.setSelectedComponent(jPanel1); // Volver a la pestaña principal
+                tabProfes.setSelectedComponent(jPanel15); // Volver a la pestaña principal
             } else {
                 JOptionPane.showMessageDialog(this, "Error al actualizar el profesor.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -3269,7 +3269,7 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JFormattedTextField txtHoraFin1;
     private javax.swing.JFormattedTextField txtHoraInicio;
     private javax.swing.JFormattedTextField txtHoraInicio1;
-    private javax.swing.JFormattedTextField txtIdAlumno;
+    private javax.swing.JTextField txtIdAlumno;
     private javax.swing.JTextField txtIdProfesor;
     private javax.swing.JTextField txtNombreAlumno;
     private javax.swing.JTextField txtNombreClase;
